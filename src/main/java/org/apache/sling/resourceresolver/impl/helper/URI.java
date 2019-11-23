@@ -1,23 +1,21 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
  */
 package org.apache.sling.resourceresolver.impl.helper;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,25 +26,24 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Locale;
-
 import org.apache.sling.api.SlingException;
-
+import org.apache.sling.api.SlingException;
 /**
  * The interface for the URI(Uniform Resource Identifiers) version of RFC 2396.
  * This class has the purpose of supportting of parsing a URI reference to
  * extend any specific protocols, the character encoding of the protocol to be
  * transported and the charset of the document.
- * 
+ *
  * A URI is always in an "escaped" form, since escaping or unescaping a
  * completed URI might change its semantics.
- * 
+ *
  * Implementers should be careful not to escape or unescape the same string more
  * than once, since unescaping an already unescaped string might lead to
  * misinterpreting a percent data character as another escaped character, or
  * vice versa in the case of escaping an already escaped string.
- * 
+ *
  * In order to avoid these problems, data types used as follows:
- * 
+ *
  * <blockquote>
  *
  * <pre>
@@ -56,12 +53,12 @@ import org.apache.sling.api.SlingException;
  * </pre>
  *
  * </blockquote>
- * 
+ *
  * So, a URI is a sequence of characters as an array of a char type, which is
  * not always represented as a sequence of octets as an array of byte.
- * 
+ *
  * URI Syntactic Components
- * 
+ *
  * <blockquote>
  *
  * <pre>
@@ -76,7 +73,7 @@ import org.apache.sling.api.SlingException;
  * </pre>
  *
  * </blockquote>
- * 
+ *
  * The following examples illustrate URI that are in common use.
  *
  * <pre>
@@ -96,9 +93,9 @@ import org.apache.sling.api.SlingException;
  *
  * Please, notice that there are many modifications from URL(RFC 1738) and
  * relative URL(RFC 1808).
- * 
+ *
  * <b>The expressions for a URI</b>
- * 
+ *
  *
  * <pre>
  * For escaped URI forms
@@ -106,12 +103,12 @@ import org.apache.sling.api.SlingException;
  *  - char[] getRawXxx() // method
  *  - String getEscapedXxx() // method
  *  - String toString() // method
- * 
+ *
  * For unescaped URI forms
  *  - URI(String) // constructor
  *  - String getXXX() // method
  * </pre>
- * 
+ *
  * This class is a slightly modified version of the URI class distributed with
  * Http Client 3.1. The changes involve removing dependencies to other Http
  * Client classes and the Commons Codec library. To this avail the following
@@ -125,11 +122,11 @@ import org.apache.sling.api.SlingException;
  * The signatures have been simplified and adapted to the use in this class.
  * Also the exception thrown has been changed to be {@link URIException}.
  */
-public class URI implements Cloneable, Comparable<URI>, Serializable {
-
+public class URI implements Serializable , Cloneable , Comparable<URI> {
     // ----------------------------------------------------------- Constructors
-
-    /** Create an instance as an internal use */
+    /**
+     * Create an instance as an internal use
+     */
     protected URI() {
     }
 
@@ -137,17 +134,21 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Construct a URI from a string with the given charset. The input string
      * can be either in escaped or unescaped form.
      *
-     * @param s URI character sequence
-     * @param escaped <tt>true</tt> if URI character sequence is in escaped
-     *            form. <tt>false</tt> otherwise.
-     * @param charset the charset string to do escape encoding, if required
-     * @throws URIException If the URI cannot be created.
-     * @throws NullPointerException if input string is <code>null</code>
+     * @param s
+     * 		URI character sequence
+     * @param escaped
+     * 		<tt>true</tt> if URI character sequence is in escaped
+     * 		form. <tt>false</tt> otherwise.
+     * @param charset
+     * 		the charset string to do escape encoding, if required
+     * @throws URIException
+     * 		If the URI cannot be created.
+     * @throws NullPointerException
+     * 		if input string is <code>null</code>
      * @see #getProtocolCharset
      * @since 3.0
      */
-    public URI(String s, boolean escaped, String charset) throws URIException,
-            NullPointerException {
+    public URI(String s, boolean escaped, String charset) throws NullPointerException, URIException {
         protocolCharset = charset;
         parseUriReference(s, escaped);
     }
@@ -156,22 +157,25 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Construct a URI from a string with the given charset. The input string
      * can be either in escaped or unescaped form.
      *
-     * @param s URI character sequence
-     * @param escaped <tt>true</tt> if URI character sequence is in escaped
-     *            form. <tt>false</tt> otherwise.
-     * @throws URIException If the URI cannot be created.
-     * @throws NullPointerException if input string is <code>null</code>
+     * @param s
+     * 		URI character sequence
+     * @param escaped
+     * 		<tt>true</tt> if URI character sequence is in escaped
+     * 		form. <tt>false</tt> otherwise.
+     * @throws URIException
+     * 		If the URI cannot be created.
+     * @throws NullPointerException
+     * 		if input string is <code>null</code>
      * @see #getProtocolCharset
      * @since 3.0
      */
-    public URI(String s, boolean escaped) throws URIException,
-            NullPointerException {
+    public URI(String s, boolean escaped) throws NullPointerException, URIException {
         parseUriReference(s, escaped);
     }
 
     /**
      * Construct a general URI from the given components.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -181,40 +185,43 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * It's for absolute URI = &lt;scheme&gt;:&lt;scheme-specific-part&gt;#
      * &lt;fragment&gt;.
      *
-     * @param scheme the scheme string
-     * @param schemeSpecificPart scheme_specific_part
-     * @param fragment the fragment string
-     * @throws URIException If the URI cannot be created.
+     * @param scheme
+     * 		the scheme string
+     * @param schemeSpecificPart
+    scheme_specific_part
+     * 		
+     * @param fragment
+     * 		the fragment string
+     * @throws URIException
+     * 		If the URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String schemeSpecificPart, String fragment)
-            throws URIException {
-
+    public URI(String scheme, String schemeSpecificPart, String fragment) throws URIException {
         // validate and contruct the URI character sequence
         if (scheme == null) {
             throw new URIException(URIException.PARSING, "scheme required");
         }
         char[] s = scheme.toLowerCase().toCharArray();
         if (validate(s, URI.scheme)) {
-            _scheme = s; // is_absoluteURI
+            _scheme = s;// is_absoluteURI
+
         } else {
             throw new URIException(URIException.PARSING, "incorrect scheme");
         }
-        _opaque = encode(schemeSpecificPart, allowed_opaque_part,
-            getProtocolCharset());
+        _opaque = encode(schemeSpecificPart, allowed_opaque_part, getProtocolCharset());
         // Set flag
         _is_opaque_part = true;
-        _fragment = fragment == null ? null : fragment.toCharArray();
+        _fragment = (fragment == null) ? null : fragment.toCharArray();
         setURI();
     }
 
     /**
      * Construct a general URI from the given components.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -225,22 +232,26 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * It's for absolute URI = &lt;scheme&gt;:&lt;path&gt;?&lt;query&gt;#&lt;
      * fragment&gt; and relative URI = &lt;path&gt;?&lt;query&gt;#&lt;fragment
      * &gt;.
      *
-     * @param scheme the scheme string
-     * @param authority the authority string
-     * @param path the path string
-     * @param query the query string
-     * @param fragment the fragment string
-     * @throws URIException If the new URI cannot be created.
+     * @param scheme
+     * 		the scheme string
+     * @param authority
+     * 		the authority string
+     * @param path
+     * 		the path string
+     * @param query
+     * 		the query string
+     * @param fragment
+     * 		the fragment string
+     * @throws URIException
+     * 		If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String authority, String path, String query,
-            String fragment) throws URIException {
-
+    public URI(String scheme, String authority, String path, String query, String fragment) throws URIException {
         // validate and contruct the URI character sequence
         StringBuilder buff = new StringBuilder();
         if (scheme != null) {
@@ -251,10 +262,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             buff.append("//");
             buff.append(authority);
         }
-        if (path != null) { // accept empty path
-            if ((scheme != null || authority != null) && !path.startsWith("/")) {
-                throw new URIException(URIException.PARSING,
-                    "abs_path requested");
+        if (path != null) {
+            // accept empty path
+            if (((scheme != null) || (authority != null)) && (!path.startsWith("/"))) {
+                throw new URIException(URIException.PARSING, "abs_path requested");
             }
             buff.append(path);
         }
@@ -272,100 +283,122 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Construct a general URI from the given components.
      *
-     * @param scheme the scheme string
-     * @param userinfo the userinfo string
-     * @param host the host string
-     * @param port the port number
-     * @throws URIException If the new URI cannot be created.
+     * @param scheme
+     * 		the scheme string
+     * @param userinfo
+     * 		the userinfo string
+     * @param host
+     * 		the host string
+     * @param port
+     * 		the port number
+     * @throws URIException
+     * 		If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port)
-            throws URIException {
-
+    public URI(String scheme, String userinfo, String host, int port) throws URIException {
         this(scheme, userinfo, host, port, null, null, null);
     }
 
     /**
      * Construct a general URI from the given components.
      *
-     * @param scheme the scheme string
-     * @param userinfo the userinfo string
-     * @param host the host string
-     * @param port the port number
-     * @param path the path string
-     * @throws URIException If the new URI cannot be created.
+     * @param scheme
+     * 		the scheme string
+     * @param userinfo
+     * 		the userinfo string
+     * @param host
+     * 		the host string
+     * @param port
+     * 		the port number
+     * @param path
+     * 		the path string
+     * @throws URIException
+     * 		If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port,
-            String path) throws URIException {
-
+    public URI(String scheme, String userinfo, String host, int port, String path) throws URIException {
         this(scheme, userinfo, host, port, path, null, null);
     }
 
     /**
      * Construct a general URI from the given components.
      *
-     * @param scheme the scheme string
-     * @param userinfo the userinfo string
-     * @param host the host string
-     * @param port the port number
-     * @param path the path string
-     * @param query the query string
-     * @throws URIException If the new URI cannot be created.
+     * @param scheme
+     * 		the scheme string
+     * @param userinfo
+     * 		the userinfo string
+     * @param host
+     * 		the host string
+     * @param port
+     * 		the port number
+     * @param path
+     * 		the path string
+     * @param query
+     * 		the query string
+     * @throws URIException
+     * 		If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port,
-            String path, String query) throws URIException {
-
+    public URI(String scheme, String userinfo, String host, int port, String path, String query) throws URIException {
         this(scheme, userinfo, host, port, path, query, null);
     }
 
     /**
      * Construct a general URI from the given components.
      *
-     * @param scheme the scheme string
-     * @param userinfo the userinfo string
-     * @param host the host string
-     * @param port the port number
-     * @param path the path string
-     * @param query the query string
-     * @param fragment the fragment string
-     * @throws URIException If the new URI cannot be created.
+     * @param scheme
+     * 		the scheme string
+     * @param userinfo
+     * 		the userinfo string
+     * @param host
+     * 		the host string
+     * @param port
+     * 		the port number
+     * @param path
+     * 		the path string
+     * @param query
+     * 		the query string
+     * @param fragment
+     * 		the fragment string
+     * @throws URIException
+     * 		If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port,
-            String path, String query, String fragment) throws URIException {
-
-        this(scheme, (host == null) ? null : ((userinfo != null)
-                ? userinfo + '@'
-                : "")
-            + host + ((port != -1) ? ":" + port : ""), path, query, fragment);
+    public URI(String scheme, String userinfo, String host, int port, String path, String query, String fragment) throws URIException {
+        this(scheme, host == null ? null : ((userinfo != null ? userinfo + '@' : "") + host) + (port != (-1) ? ":" + port : ""), path, query, fragment);
     }
 
     /**
      * Construct a general URI from the given components.
      *
-     * @param scheme the scheme string
-     * @param host the host string
-     * @param path the path string
-     * @param fragment the fragment string
-     * @throws URIException If the new URI cannot be created.
+     * @param scheme
+     * 		the scheme string
+     * @param host
+     * 		the host string
+     * @param path
+     * 		the path string
+     * @param fragment
+     * 		the fragment string
+     * @throws URIException
+     * 		If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String host, String path, String fragment)
-            throws URIException {
-
+    public URI(String scheme, String host, String path, String fragment) throws URIException {
         this(scheme, host, path, null, fragment);
     }
 
     /**
      * Construct a general URI with the given relative URI string.
      *
-     * @param base the base URI
-     * @param relative the relative URI string
-     * @param escaped <tt>true</tt> if URI character sequence is in escaped
-     *            form. <tt>false</tt> otherwise.
-     * @throws URIException If the new URI cannot be created.
+     * @param base
+     * 		the base URI
+     * @param relative
+     * 		the relative URI string
+     * @param escaped
+     * 		<tt>true</tt> if URI character sequence is in escaped
+     * 		form. <tt>false</tt> otherwise.
+     * @throws URIException
+     * 		If the new URI cannot be created.
      * @since 3.0
      */
     public URI(URI base, String relative, boolean escaped) throws URIException {
@@ -374,7 +407,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Construct a general URI with the given relative URI.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -383,11 +416,11 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * Resolving Relative References to Absolute Form. <strong>Examples of
      * Resolving Relative URI References</strong> Within an object with a
      * well-defined base URI of
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -395,9 +428,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * the relative URI would be resolved as follows: Normal Examples
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -426,16 +459,18 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * Some URI schemes do not allow a hierarchical syntax matching the
      * <hier_part> syntax, and thus cannot use relative references.
      *
-     * @param base the base URI
-     * @param relative the relative URI
-     * @throws URIException If the new URI cannot be created.
+     * @param base
+     * 		the base URI
+     * @param relative
+     * 		the relative URI
+     * @throws URIException
+     * 		If the new URI cannot be created.
      */
     public URI(URI base, URI relative) throws URIException {
-
         if (base._scheme == null) {
             throw new URIException(URIException.PARSING, "base URI required");
         }
@@ -446,16 +481,14 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         }
         if (base._is_opaque_part || relative._is_opaque_part) {
             this._scheme = base._scheme;
-            this._is_opaque_part = base._is_opaque_part
-                || relative._is_opaque_part;
+            this._is_opaque_part = base._is_opaque_part || relative._is_opaque_part;
             this._opaque = relative._opaque;
             this._fragment = relative._fragment;
             this.setURI();
             return;
         }
         boolean schemesEqual = Arrays.equals(base._scheme, relative._scheme);
-        if (relative._scheme != null
-            && (!schemesEqual || relative._authority != null)) {
+        if ((relative._scheme != null) && ((!schemesEqual) || (relative._authority != null))) {
             this._scheme = relative._scheme;
             this._is_net_path = relative._is_net_path;
             this._authority = relative._authority;
@@ -470,7 +503,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             this._is_abs_path = relative._is_abs_path;
             this._is_rel_path = relative._is_rel_path;
             this._path = relative._path;
-        } else if (base._authority != null && relative._scheme == null) {
+        } else if ((base._authority != null) && (relative._scheme == null)) {
             this._is_net_path = base._is_net_path;
             this._authority = base._authority;
             if (base._is_server) {
@@ -498,10 +531,8 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             this._path = relative._path;
         }
         // resolve the path and query if necessary
-        if (relative._authority == null
-            && (relative._scheme == null || schemesEqual)) {
-            if ((relative._path == null || relative._path.length == 0)
-                && relative._query == null) {
+        if ((relative._authority == null) && ((relative._scheme == null) || schemesEqual)) {
+            if (((relative._path == null) || (relative._path.length == 0)) && (relative._query == null)) {
                 // handle a reference to the current document, see RFC 2396
                 // section 5.2 step 2
                 this._path = base._path;
@@ -526,8 +557,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // --------------------------------------------------- Instance Variables
-
-    /** Version ID for serialization */
+    /**
+     * Version ID for serialization
+     */
     static final long serialVersionUID = 604752400577948726L;
 
     /**
@@ -561,6 +593,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     protected static String defaultDocumentCharsetByLocale = null;
 
     protected static String defaultDocumentCharsetByPlatform = null;
+
     // Static initializer for defaultDocumentCharset
     static {
         Locale locale = Locale.getDefault();
@@ -629,16 +662,16 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * The root path.
      */
-    protected static final char[] rootPath = { '/' };
+    protected static final char[] rootPath = new char[]{ '/' };
 
     // ---------------------- Generous characters for each component validation
-
     /**
      * The percent "%" character always has the reserved purpose of being the
      * escape indicator, it must be escaped as "%25" in order to be used as data
      * within a URI.
      */
     protected static final BitSet percent = new BitSet(256);
+
     // Static initializer for percent
     static {
         percent.set('%');
@@ -646,7 +679,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for digit.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -654,9 +687,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet digit = new BitSet(256);
+
     // Static initializer for digit
     static {
         for (int i = '0'; i <= '9'; i++) {
@@ -666,7 +699,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for alpha.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -674,9 +707,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet alpha = new BitSet(256);
+
     // Static initializer for alpha
     static {
         for (int i = 'a'; i <= 'z'; i++) {
@@ -689,7 +722,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for alphanum (join of alpha &amp; digit).
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -697,9 +730,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet alphanum = new BitSet(256);
+
     // Static initializer for alphanum
     static {
         alphanum.or(alpha);
@@ -708,7 +741,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for hex.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -717,9 +750,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet hex = new BitSet(256);
+
     // Static initializer for hex
     static {
         hex.or(digit);
@@ -733,7 +766,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for escaped.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -741,9 +774,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet escaped = new BitSet(256);
+
     // Static initializer for escaped
     static {
         escaped.or(percent);
@@ -752,7 +785,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for mark.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -760,9 +793,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet mark = new BitSet(256);
+
     // Static initializer for mark
     static {
         mark.set('-');
@@ -779,7 +812,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Data characters that are allowed in a URI but do not have a reserved
      * purpose are called unreserved.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -787,9 +820,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet unreserved = new BitSet(256);
+
     // Static initializer for unreserved
     static {
         unreserved.or(alphanum);
@@ -798,7 +831,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for reserved.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -806,9 +839,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet reserved = new BitSet(256);
+
     // Static initializer for reserved
     static {
         reserved.set(';');
@@ -825,7 +858,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for uric.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -833,9 +866,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet uric = new BitSet(256);
+
     // Static initializer for uric
     static {
         uric.or(reserved);
@@ -845,7 +878,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for fragment (alias for uric).
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -853,13 +886,12 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet fragment = uric;
 
     /**
      * BitSet for query (alias for uric).
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -867,13 +899,12 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet query = uric;
 
     /**
      * BitSet for pchar.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -881,9 +912,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet pchar = new BitSet(256);
+
     // Static initializer for pchar
     static {
         pchar.or(unreserved);
@@ -899,7 +930,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for param (alias for pchar).
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -907,13 +938,12 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet param = pchar;
 
     /**
      * BitSet for segment.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -921,9 +951,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet segment = new BitSet(256);
+
     // Static initializer for segment
     static {
         segment.or(pchar);
@@ -933,7 +963,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for path segments.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -941,9 +971,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet path_segments = new BitSet(256);
+
     // Static initializer for path_segments
     static {
         path_segments.set('/');
@@ -952,7 +982,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * URI absolute path.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -960,9 +990,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet abs_path = new BitSet(256);
+
     // Static initializer for abs_path
     static {
         abs_path.set('/');
@@ -971,7 +1001,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * URI bitset for encoding typical non-slash characters.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -980,9 +1010,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet uric_no_slash = new BitSet(256);
+
     // Static initializer for uric_no_slash
     static {
         uric_no_slash.or(unreserved);
@@ -1000,7 +1030,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * URI bitset that combines uric_no_slash and uric.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1008,9 +1038,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet opaque_part = new BitSet(256);
+
     // Static initializer for opaque_part
     static {
         // it's generous. because first character must not include a slash
@@ -1020,7 +1050,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * URI bitset that combines absolute path and opaque part.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1028,9 +1058,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet path = new BitSet(256);
+
     // Static initializer for path
     static {
         path.or(abs_path);
@@ -1044,7 +1074,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Bitset that combines digit and dot fo IPv$address.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1052,9 +1082,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet IPv4address = new BitSet(256);
+
     // Static initializer for IPv4address
     static {
         IPv4address.or(digit);
@@ -1063,7 +1093,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * RFC 2373.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1071,19 +1101,20 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet IPv6address = new BitSet(256);
+
     // Static initializer for IPv6address reference
     static {
-        IPv6address.or(hex); // hexpart
+        IPv6address.or(hex);// hexpart
+
         IPv6address.set(':');
         IPv6address.or(IPv4address);
     }
 
     /**
      * RFC 2732, 2373.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1091,9 +1122,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet IPv6reference = new BitSet(256);
+
     // Static initializer for IPv6reference
     static {
         IPv6reference.set('[');
@@ -1103,7 +1134,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for toplabel.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1111,9 +1142,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet toplabel = new BitSet(256);
+
     // Static initializer for toplabel
     static {
         toplabel.or(alphanum);
@@ -1122,7 +1153,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for domainlabel.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1130,13 +1161,12 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet domainlabel = toplabel;
 
     /**
      * BitSet for hostname.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1144,9 +1174,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet hostname = new BitSet(256);
+
     // Static initializer for hostname
     static {
         hostname.or(toplabel);
@@ -1156,7 +1186,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for host.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1164,19 +1194,20 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet host = new BitSet(256);
+
     // Static initializer for host
     static {
         host.or(hostname);
         // host.or(IPv4address);
-        host.or(IPv6reference); // IPv4address
+        host.or(IPv6reference);// IPv4address
+
     }
 
     /**
      * BitSet for hostport.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1184,9 +1215,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet hostport = new BitSet(256);
+
     // Static initializer for hostport
     static {
         hostport.or(host);
@@ -1196,7 +1227,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Bitset for userinfo.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1205,9 +1236,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet userinfo = new BitSet(256);
+
     // Static initializer for userinfo
     static {
         userinfo.or(unreserved);
@@ -1225,10 +1256,12 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * BitSet for within the userinfo component like user and password.
      */
     public static final BitSet within_userinfo = new BitSet(256);
+
     // Static initializer for within_userinfo
     static {
         within_userinfo.or(userinfo);
-        within_userinfo.clear(';'); // reserved within authority
+        within_userinfo.clear(';');// reserved within authority
+
         within_userinfo.clear(':');
         within_userinfo.clear('@');
         within_userinfo.clear('?');
@@ -1237,7 +1270,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Bitset for server.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1245,9 +1278,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet server = new BitSet(256);
+
     // Static initializer for server
     static {
         server.or(userinfo);
@@ -1257,7 +1290,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for reg_name.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1265,9 +1298,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet reg_name = new BitSet(256);
+
     // Static initializer for reg_name
     static {
         reg_name.or(unreserved);
@@ -1284,7 +1317,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for authority.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1292,9 +1325,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet authority = new BitSet(256);
+
     // Static initializer for authority
     static {
         authority.or(server);
@@ -1303,7 +1336,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for scheme.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1311,9 +1344,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet scheme = new BitSet(256);
+
     // Static initializer for scheme
     static {
         scheme.or(alpha);
@@ -1325,7 +1358,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for rel_segment.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1333,9 +1366,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet rel_segment = new BitSet(256);
+
     // Static initializer for rel_segment
     static {
         rel_segment.or(unreserved);
@@ -1351,7 +1384,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for rel_path.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1359,9 +1392,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet rel_path = new BitSet(256);
+
     // Static initializer for rel_path
     static {
         rel_path.or(rel_segment);
@@ -1370,7 +1403,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for net_path.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1378,9 +1411,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet net_path = new BitSet(256);
+
     // Static initializer for net_path
     static {
         net_path.set('/');
@@ -1390,7 +1423,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for hier_part.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1398,9 +1431,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet hier_part = new BitSet(256);
+
     // Static initializer for hier_part
     static {
         hier_part.or(net_path);
@@ -1411,7 +1444,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for relativeURI.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1419,9 +1452,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet relativeURI = new BitSet(256);
+
     // Static initializer for relativeURI
     static {
         relativeURI.or(net_path);
@@ -1433,7 +1466,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for absoluteURI.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1441,9 +1474,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet absoluteURI = new BitSet(256);
+
     // Static initializer for absoluteURI
     static {
         absoluteURI.or(scheme);
@@ -1454,7 +1487,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * BitSet for URI-reference.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1462,9 +1495,9 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      */
     protected static final BitSet URI_reference = new BitSet(256);
+
     // Static initializer for URI_reference
     static {
         URI_reference.or(absoluteURI);
@@ -1475,23 +1508,24 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     // ---------------------------- Characters disallowed within the URI syntax
     // Excluded US-ASCII Characters are like control, space, delims and unwise
-
     /**
      * BitSet for control.
      */
     public static final BitSet control = new BitSet(256);
+
     // Static initializer for control
     static {
-        for (int i = 0; i <= 0x1F; i++) {
+        for (int i = 0; i <= 0x1f; i++) {
             control.set(i);
         }
-        control.set(0x7F);
+        control.set(0x7f);
     }
 
     /**
      * BitSet for space.
      */
     public static final BitSet space = new BitSet(256);
+
     // Static initializer for space
     static {
         space.set(0x20);
@@ -1501,6 +1535,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * BitSet for delims.
      */
     public static final BitSet delims = new BitSet(256);
+
     // Static initializer for delims
     static {
         delims.set('<');
@@ -1514,6 +1549,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * BitSet for unwise.
      */
     public static final BitSet unwise = new BitSet(256);
+
     // Static initializer for unwise
     static {
         unwise.set('{');
@@ -1530,6 +1566,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Disallowed rel_path before escaping.
      */
     public static final BitSet disallowed_rel_path = new BitSet(256);
+
     // Static initializer for disallowed_rel_path
     static {
         disallowed_rel_path.or(uric);
@@ -1540,6 +1577,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Disallowed opaque_part before escaping.
      */
     public static final BitSet disallowed_opaque_part = new BitSet(256);
+
     // Static initializer for disallowed_opaque_part
     static {
         disallowed_opaque_part.or(uric);
@@ -1547,11 +1585,11 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ----------------------- Characters allowed within and for each component
-
     /**
      * Those characters that are allowed for the authority component.
      */
     public static final BitSet allowed_authority = new BitSet(256);
+
     // Static initializer for allowed_authority
     static {
         allowed_authority.or(authority);
@@ -1562,6 +1600,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for the opaque_part.
      */
     public static final BitSet allowed_opaque_part = new BitSet(256);
+
     // Static initializer for allowed_opaque_part
     static {
         allowed_opaque_part.or(opaque_part);
@@ -1572,6 +1611,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for the reg_name.
      */
     public static final BitSet allowed_reg_name = new BitSet(256);
+
     // Static initializer for allowed_reg_name
     static {
         allowed_reg_name.or(reg_name);
@@ -1583,6 +1623,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for the userinfo component.
      */
     public static final BitSet allowed_userinfo = new BitSet(256);
+
     // Static initializer for allowed_userinfo
     static {
         allowed_userinfo.or(userinfo);
@@ -1594,6 +1635,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for within the userinfo component.
      */
     public static final BitSet allowed_within_userinfo = new BitSet(256);
+
     // Static initializer for allowed_within_userinfo
     static {
         allowed_within_userinfo.or(within_userinfo);
@@ -1605,6 +1647,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * characters '[', ']' in IPv6reference should be excluded.
      */
     public static final BitSet allowed_IPv6reference = new BitSet(256);
+
     // Static initializer for allowed_IPv6reference
     static {
         allowed_IPv6reference.or(IPv6reference);
@@ -1618,6 +1661,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * '[', ']' in IPv6reference should be excluded.
      */
     public static final BitSet allowed_host = new BitSet(256);
+
     // Static initializer for allowed_host
     static {
         allowed_host.or(hostname);
@@ -1628,6 +1672,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for the authority component.
      */
     public static final BitSet allowed_within_authority = new BitSet(256);
+
     // Static initializer for allowed_within_authority
     static {
         allowed_within_authority.or(server);
@@ -1643,6 +1688,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for the abs_path.
      */
     public static final BitSet allowed_abs_path = new BitSet(256);
+
     // Static initializer for allowed_abs_path
     static {
         allowed_abs_path.or(abs_path);
@@ -1655,6 +1701,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for the rel_path.
      */
     public static final BitSet allowed_rel_path = new BitSet(256);
+
     // Static initializer for allowed_rel_path
     static {
         allowed_rel_path.or(rel_path);
@@ -1666,6 +1713,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed within the path.
      */
     public static final BitSet allowed_within_path = new BitSet(256);
+
     // Static initializer for allowed_within_path
     static {
         allowed_within_path.or(abs_path);
@@ -1679,6 +1727,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed for the query component.
      */
     public static final BitSet allowed_query = new BitSet(256);
+
     // Static initializer for allowed_query
     static {
         allowed_query.or(uric);
@@ -1689,16 +1738,19 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Those characters that are allowed within the query component.
      */
     public static final BitSet allowed_within_query = new BitSet(256);
+
     // Static initializer for allowed_within_query
     static {
         allowed_within_query.or(allowed_query);
-        allowed_within_query.andNot(reserved); // excluded 'reserved'
+        allowed_within_query.andNot(reserved);// excluded 'reserved'
+
     }
 
     /**
      * Those characters that are allowed for the fragment component.
      */
     public static final BitSet allowed_fragment = new BitSet(256);
+
     // Static initializer for allowed_fragment
     static {
         allowed_fragment.or(uric);
@@ -1706,9 +1758,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ------------------------------------------- Flags for this URI-reference
-
     // TODO: Figure out what all these variables are for and provide javadoc
-
     // URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
     // absoluteURI = scheme ":" ( hier_part | opaque_part )
     protected boolean _is_hier_part;
@@ -1727,7 +1777,8 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     // authority = server | reg_name
     protected boolean _is_reg_name;
 
-    protected boolean _is_server; // = _has_server
+    protected boolean _is_server;// = _has_server
+
 
     // server = [ [ userinfo "@" ] hostport ]
     // host = hostname | IPv4address | IPv6reference
@@ -1738,11 +1789,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     protected boolean _is_IPv6reference;
 
     // ------------------------------------------ Character and escape encoding
-
     /**
      * Encodes URI string. This is a two mapping, one from original characters
      * to octets, and subsequently a second from octets to URI characters:
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1750,38 +1800,39 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * An escaped octet is encoded as a character triplet, consisting of the
      * percent character "%" followed by the two hexadecimal digits representing
      * the octet code. For example, "%20" is the escaped encoding for the
      * US-ASCII space character.
-     * 
+     *
      * Conversion from the local filesystem character set to UTF-8 will normally
      * involve a two step process. First convert the local character set to the
      * UCS; then convert the UCS to UTF-8. The first step in the process can be
      * performed by maintaining a mapping table that includes the local
      * character set code and the corresponding UCS code. The next step is to
      * convert the UCS character code to the UTF-8 encoding.
-     * 
+     *
      * Mapping between vendor codepages can be done in a very similar manner as
      * described above.
-     * 
+     *
      * The only time escape encodings can allowedly be made is when a URI is
      * being created from its component parts. The escape and validate methods
      * are internally performed within this method.
      *
-     * @param original the original character sequence
-     * @param allowed those characters that are allowed within a component
-     * @param charset the protocol charset
+     * @param original
+     * 		the original character sequence
+     * @param allowed
+     * 		those characters that are allowed within a component
+     * @param charset
+     * 		the protocol charset
      * @return URI character sequence
-     * @throws URIException null component or unsupported character encoding
+     * @throws URIException
+     * 		null component or unsupported character encoding
      */
-
-    protected static char[] encode(String original, BitSet allowed,
-            String charset) throws URIException {
+    protected static char[] encode(String original, BitSet allowed, String charset) throws URIException {
         if (original == null) {
-            throw new IllegalArgumentException(
-                "Original string may not be null");
+            throw new IllegalArgumentException("Original string may not be null");
         }
         if (allowed == null) {
             throw new IllegalArgumentException("Allowed bitset may not be null");
@@ -1794,7 +1845,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Decodes URI encoded string. This is a two mapping, one from URI
      * characters to octets, and subsequently a second from octets to original
      * characters:
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1802,32 +1853,33 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * A URI must be separated into its components before the escaped characters
      * within those components can be allowedly decoded.
-     * 
+     *
      * Notice that there is a chance that URI characters that are non UTF-8 may
      * be parsed as valid UTF-8. A recent non-scientific analysis found that EUC
      * encoded Japanese words had a 2.7% false reading; SJIS had a 0.0005% false
      * reading; other encoding such as ASCII or KOI-8 have a 0% false reading.
-     * 
+     *
      * The percent "%" character always has the reserved purpose of being the
      * escape indicator, it must be escaped as "%25" in order to be used as data
      * within a URI.
-     * 
+     *
      * The unescape method is internally performed within this method.
      *
-     * @param component the URI character sequence
-     * @param charset the protocol charset
+     * @param component
+     * 		the URI character sequence
+     * @param charset
+     * 		the protocol charset
      * @return original character sequence
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      */
-    protected static String decode(char[] component, String charset)
-            throws URIException {
+    protected static String decode(char[] component, String charset) throws URIException {
         if (component == null) {
-            throw new IllegalArgumentException(
-                "Component array of chars may not be null");
+            throw new IllegalArgumentException("Component array of chars may not be null");
         }
         return decode(new String(component), charset);
     }
@@ -1836,7 +1888,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Decodes URI encoded string. This is a two mapping, one from URI
      * characters to octets, and subsequently a second from octets to original
      * characters:
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1844,33 +1896,34 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * A URI must be separated into its components before the escaped characters
      * within those components can be allowedly decoded.
-     * 
+     *
      * Notice that there is a chance that URI characters that are non UTF-8 may
      * be parsed as valid UTF-8. A recent non-scientific analysis found that EUC
      * encoded Japanese words had a 2.7% false reading; SJIS had a 0.0005% false
      * reading; other encoding such as ASCII or KOI-8 have a 0% false reading.
-     * 
+     *
      * The percent "%" character always has the reserved purpose of being the
      * escape indicator, it must be escaped as "%25" in order to be used as data
      * within a URI.
-     * 
+     *
      * The unescape method is internally performed within this method.
      *
-     * @param component the URI character sequence
-     * @param charset the protocol charset
+     * @param component
+     * 		the URI character sequence
+     * @param charset
+     * 		the protocol charset
      * @return original character sequence
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      * @since 3.0
      */
-    protected static String decode(String component, String charset)
-            throws URIException {
+    protected static String decode(String component, String charset) throws URIException {
         if (component == null) {
-            throw new IllegalArgumentException(
-                "Component array of chars may not be null");
+            throw new IllegalArgumentException("Component array of chars may not be null");
         }
         byte[] rawdata = decodeUrl(getAsciiBytes(component));
         return getString(rawdata, charset);
@@ -1879,15 +1932,18 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Pre-validate the unescaped URI string within a specific component.
      *
-     * @param component the component string within the component
-     * @param disallowed those characters disallowed within the component
+     * @param component
+     * 		the component string within the component
+     * @param disallowed
+     * 		those characters disallowed within the component
      * @return if true, it doesn't have the disallowed characters if false, the
-     *         component is undefined or an incorrect one
+    component is undefined or an incorrect one
      */
     protected boolean prevalidate(String component, BitSet disallowed) {
         // prevalidate the given component by disallowed characters
         if (component == null) {
-            return false; // undefined
+            return false;// undefined
+
         }
         char[] target = component.toCharArray();
         for (int i = 0; i < target.length; i++) {
@@ -1903,8 +1959,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * must be performed after escape encoding. Or it doesn't include escaped
      * characters.
      *
-     * @param component the characters sequence within the component
-     * @param generous those characters that are allowed within a component
+     * @param component
+     * 		the characters sequence within the component
+     * @param generous
+     * 		those characters that are allowed within a component
      * @return if true, it's the correct URI character sequence
      */
     protected boolean validate(char[] component, BitSet generous) {
@@ -1916,21 +1974,24 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Validate the URI characters within a specific component. The component
      * must be performed after escape encoding. Or it doesn't include escaped
      * characters.
-     * 
+     *
      * It's not that much strict, generous. The strict validation might be
      * performed before being called this method.
      *
-     * @param component the characters sequence within the component
-     * @param soffset the starting offset of the given component
-     * @param eoffset the ending offset of the given component if -1, it means
-     *            the length of the component
-     * @param generous those characters that are allowed within a component
+     * @param component
+     * 		the characters sequence within the component
+     * @param soffset
+     * 		the starting offset of the given component
+     * @param eoffset
+     * 		the ending offset of the given component if -1, it means
+     * 		the length of the component
+     * @param generous
+     * 		those characters that are allowed within a component
      * @return if true, it's the correct URI character sequence
      */
-    protected boolean validate(char[] component, int soffset, int eoffset,
-            BitSet generous) {
+    protected boolean validate(char[] component, int soffset, int eoffset, BitSet generous) {
         // validate each component by generous characters
-        if (eoffset == -1) {
+        if (eoffset == (-1)) {
             eoffset = component.length - 1;
         }
         for (int i = soffset; i <= eoffset; i++) {
@@ -1945,10 +2006,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * In order to avoid any possilbity of conflict with non-ASCII characters,
      * Parse a URI reference as a <code>String</code> with the character
      * encoding of the local system or the document.
-     * 
+     *
      * The following line is the regular expression for breaking-down a URI
      * reference into its components.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1957,11 +2018,11 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
+     *
      * For example, matching the above expression to
      * http://jakarta.apache.org/ietf/uri/#Related results in the following
      * subexpression matches:
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -1977,40 +2038,32 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      *
-     * @param original the original character sequence
-     * @param escaped <code>true</code> if <code>original</code> is escaped
-     * @throws URIException If an error occurs.
+     * @param original
+     * 		the original character sequence
+     * @param escaped
+     * 		<code>true</code> if <code>original</code> is escaped
+     * @throws URIException
+     * 		If an error occurs.
      */
-    protected void parseUriReference(String original, boolean escaped)
-            throws URIException {
-
+    protected void parseUriReference(String original, boolean escaped) throws URIException {
         // validate and contruct the URI character sequence
         if (original == null) {
             throw new URIException("URI-Reference required");
         }
-
-        /*
-         * @ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
-         */
+        /* @ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))? */
         String tmp = original.trim();
-
-        /*
-         * The length of the string sequence of characters. It may not be equal
-         * to the length of the byte array.
+        /* The length of the string sequence of characters. It may not be equal
+        to the length of the byte array.
          */
         int length = tmp.length();
-
-        /*
-         * Remove the delimiters like angle brackets around an URI.
-         */
+        /* Remove the delimiters like angle brackets around an URI. */
         boolean delim = false;
         if (length > 0) {
-            char[] firstDelimiter = { tmp.charAt(0) };
+            char[] firstDelimiter = new char[]{ tmp.charAt(0) };
             if (validate(firstDelimiter, delims)) {
                 if (length >= 2) {
-                    char[] lastDelimiter = { tmp.charAt(length - 1) };
+                    char[] lastDelimiter = new char[]{ tmp.charAt(length - 1) };
                     if (validate(lastDelimiter, delims)) {
                         delim = true;
                     }
@@ -2020,58 +2073,45 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         if (delim) {
             tmp = tmp.substring(1, length - 1);
             length = length - 2;
-        }
-        else {
+        } else {
             tmp = original;
             length = original.length();
             int idx = 0;
-            while (idx < length  && tmp.charAt(idx) <= ' ') {
+            while ((idx < length) && (tmp.charAt(idx) <= ' ')) {
                 idx++;
-            }
+            } 
             if (idx > 0) {
                 if (idx < length) {
                     tmp = tmp.substring(idx);
                     length -= idx;
-                }
-                else {
+                } else {
                     tmp = "";
                     length = 0;
                 }
             }
         }
-
-        /*
-         * The starting index
-         */
+        /* The starting index */
         int from = 0;
-
-        /*
-         * The test flag whether the URI is started from the path component.
-         */
+        /* The test flag whether the URI is started from the path component. */
         boolean isStartedFromPath = false;
         int atColon = tmp.indexOf(':');
         int atSlash = tmp.indexOf('/');
-        if ((atColon <= 0 && !tmp.startsWith("//"))
-            || (atSlash >= 0 && atSlash < atColon)) {
+        if (((atColon <= 0) && (!tmp.startsWith("//"))) || ((atSlash >= 0) && (atSlash < atColon))) {
             isStartedFromPath = true;
         }
-
-        /*
-         * <blockquote><pre>
-         * @@@@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
-         * </pre></blockquote>
+        /* <blockquote><pre>
+        @@@@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+        </pre></blockquote>
          */
         int at = indexFirstOf(tmp, isStartedFromPath ? "/?#" : ":/?#", from);
-        if (at == -1) {
+        if (at == (-1)) {
             at = 0;
         }
-
-        /*
-         * Parse the scheme. <blockquote><pre> scheme = $2 = http
-         * @ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
-         * </pre></blockquote>
+        /* Parse the scheme. <blockquote><pre> scheme = $2 = http
+        @ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+        </pre></blockquote>
          */
-        if (at > 0 && at < length && tmp.charAt(at) == ':') {
+        if (((at > 0) && (at < length)) && (tmp.charAt(at) == ':')) {
             char[] target = tmp.substring(0, at).toLowerCase().toCharArray();
             if (validate(target, scheme)) {
                 _scheme = target;
@@ -2080,26 +2120,21 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             }
             from = ++at;
         }
-
-        /*
-         * Parse the authority component. <blockquote><pre> authority = $4 =
-         * jakarta.apache.org
-         * @@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
-         * </pre></blockquote>
+        /* Parse the authority component. <blockquote><pre> authority = $4 =
+        jakarta.apache.org
+        @@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+        </pre></blockquote>
          */
         // Reset flags
         _is_net_path = _is_abs_path = _is_rel_path = _is_hier_part = false;
-        if (0 <= at && at < length && tmp.charAt(at) == '/') {
+        if (((0 <= at) && (at < length)) && (tmp.charAt(at) == '/')) {
             // Set flag
             _is_hier_part = true;
-            if (at + 2 < length && tmp.charAt(at + 1) == '/'
-                && !isStartedFromPath) {
+            if ((((at + 2) < length) && (tmp.charAt(at + 1) == '/')) && (!isStartedFromPath)) {
                 // the temporary index to start the search from
                 int next = indexFirstOf(tmp, "/?#", at + 2);
-                if (next == -1) {
-                    next = (tmp.substring(at + 2).length() == 0)
-                            ? at + 2
-                            : tmp.length();
+                if (next == (-1)) {
+                    next = (tmp.substring(at + 2).length() == 0) ? at + 2 : tmp.length();
                 }
                 parseAuthority(tmp.substring(at + 2, next), escaped);
                 from = at = next;
@@ -2111,33 +2146,21 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
                 _is_abs_path = true;
             }
         }
-
-        /*
-         * Parse the path component. <blockquote><pre> path = $5 = /ietf/uri/
-         * @@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
-         * </pre></blockquote>
+        /* Parse the path component. <blockquote><pre> path = $5 = /ietf/uri/
+        @@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+        </pre></blockquote>
          */
         if (from < length) {
             // rel_path = rel_segment [ abs_path ]
             int next = indexFirstOf(tmp, "?#", from);
-            if (next == -1) {
+            if (next == (-1)) {
                 next = tmp.length();
             }
             if (!_is_abs_path) {
-                if (!escaped
-                    && prevalidate(tmp.substring(from, next),
-                        disallowed_rel_path)
-                    || escaped
-                    && validate(tmp.substring(from, next).toCharArray(),
-                        rel_path)) {
+                if (((!escaped) && prevalidate(tmp.substring(from, next), disallowed_rel_path)) || (escaped && validate(tmp.substring(from, next).toCharArray(), rel_path))) {
                     // Set flag
                     _is_rel_path = true;
-                } else if (!escaped
-                    && prevalidate(tmp.substring(from, next),
-                        disallowed_opaque_part)
-                    || escaped
-                    && validate(tmp.substring(from, next).toCharArray(),
-                        opaque_part)) {
+                } else if (((!escaped) && prevalidate(tmp.substring(from, next), disallowed_opaque_part)) || (escaped && validate(tmp.substring(from, next).toCharArray(), opaque_part))) {
                     // Set flag
                     _is_opaque_part = true;
                 } else {
@@ -2153,19 +2176,16 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             }
             at = next;
         }
-
         // set the charset to do escape encoding
         String charset = getProtocolCharset();
-
-        /*
-         * Parse the query component. <blockquote><pre> query = $7 =
-         * <undefined>
-         * @@@@@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
-         * </pre></blockquote>
+        /* Parse the query component. <blockquote><pre> query = $7 =
+        <undefined>
+        @@@@@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+        </pre></blockquote>
          */
-        if (0 <= at && at + 1 < length && tmp.charAt(at) == '?') {
+        if (((0 <= at) && ((at + 1) < length)) && (tmp.charAt(at) == '?')) {
             int next = tmp.indexOf('#', at + 1);
-            if (next == -1) {
+            if (next == (-1)) {
                 next = tmp.length();
             }
             if (escaped) {
@@ -2174,29 +2194,23 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
                     throw new URIException("Invalid query");
                 }
             } else {
-                _query = encode(tmp.substring(at + 1, next), allowed_query,
-                    charset);
+                _query = encode(tmp.substring(at + 1, next), allowed_query, charset);
             }
             at = next;
         }
-
-        /*
-         * Parse the fragment component. <blockquote><pre> fragment = $9 =
-         * Related
-         * @@@@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
-         * </pre></blockquote>
+        /* Parse the fragment component. <blockquote><pre> fragment = $9 =
+        Related
+        @@@@@@@@ ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+        </pre></blockquote>
          */
-        if (0 <= at && at + 1 <= length && tmp.charAt(at) == '#') {
-            if (at + 1 == length) { // empty fragment
+        if (((0 <= at) && ((at + 1) <= length)) && (tmp.charAt(at) == '#')) {
+            if ((at + 1) == length) {
+                // empty fragment
                 _fragment = "".toCharArray();
             } else {
-                _fragment = (escaped)
-                        ? tmp.substring(at + 1).toCharArray()
-                        : encode(tmp.substring(at + 1), allowed_fragment,
-                            charset);
+                _fragment = (escaped) ? tmp.substring(at + 1).toCharArray() : encode(tmp.substring(at + 1), allowed_fragment, charset);
             }
         }
-
         // set this URI.
         setURI();
     }
@@ -2205,8 +2219,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Get the earlier index that to be searched for the first occurrance in one
      * of any of the given string.
      *
-     * @param s the string to be indexed
-     * @param delims the delimiters used to index
+     * @param s
+     * 		the string to be indexed
+     * @param delims
+     * 		the delimiters used to index
      * @return the earlier index if there are delimiters
      */
     protected int indexFirstOf(String s, String delims) {
@@ -2217,16 +2233,19 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Get the earlier index that to be searched for the first occurrance in one
      * of any of the given string.
      *
-     * @param s the string to be indexed
-     * @param delims the delimiters used to index
-     * @param offset the from index
+     * @param s
+     * 		the string to be indexed
+     * @param delims
+     * 		the delimiters used to index
+     * @param offset
+     * 		the from index
      * @return the earlier index if there are delimiters
      */
     protected int indexFirstOf(String s, String delims, int offset) {
-        if (s == null || s.length() == 0) {
+        if ((s == null) || (s.length() == 0)) {
             return -1;
         }
-        if (delims == null || delims.length() == 0) {
+        if ((delims == null) || (delims.length() == 0)) {
             return -1;
         }
         // check boundaries
@@ -2240,19 +2259,21 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         char[] delim = delims.toCharArray();
         for (int i = 0; i < delim.length; i++) {
             int at = s.indexOf(delim[i], offset);
-            if (at >= 0 && at < min) {
+            if ((at >= 0) && (at < min)) {
                 min = at;
             }
         }
-        return (min == s.length()) ? -1 : min;
+        return min == s.length() ? -1 : min;
     }
 
     /**
      * Get the earlier index that to be searched for the first occurrance in one
      * of any of the given array.
      *
-     * @param s the character array to be indexed
-     * @param delim the delimiter used to index
+     * @param s
+     * 		the character array to be indexed
+     * @param delim
+     * 		the delimiter used to index
      * @return the ealier index if there are a delimiter
      */
     protected int indexFirstOf(char[] s, char delim) {
@@ -2263,13 +2284,16 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Get the earlier index that to be searched for the first occurrance in one
      * of any of the given array.
      *
-     * @param s the character array to be indexed
-     * @param delim the delimiter used to index
-     * @param offset The offset.
+     * @param s
+     * 		the character array to be indexed
+     * @param delim
+     * 		the delimiter used to index
+     * @param offset
+     * 		The offset.
      * @return the ealier index if there is a delimiter
      */
     protected int indexFirstOf(char[] s, char delim, int offset) {
-        if (s == null || s.length == 0) {
+        if ((s == null) || (s.length == 0)) {
             return -1;
         }
         // check boundaries
@@ -2289,47 +2313,42 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Parse the authority component.
      *
-     * @param original the original character sequence of authority component
-     * @param escaped <code>true</code> if <code>original</code> is escaped
-     * @throws URIException If an error occurs.
+     * @param original
+     * 		the original character sequence of authority component
+     * @param escaped
+     * 		<code>true</code> if <code>original</code> is escaped
+     * @throws URIException
+     * 		If an error occurs.
      */
-    protected void parseAuthority(String original, boolean escaped)
-            throws URIException {
-
+    protected void parseAuthority(String original, boolean escaped) throws URIException {
         // Reset flags
         _is_reg_name = _is_server = _is_hostname = _is_IPv4address = _is_IPv6reference = false;
-
         // set the charset to do escape encoding
         String charset = getProtocolCharset();
-
         boolean hasPort = true;
         int from = 0;
         int next = original.indexOf('@');
-        if (next != -1) { // neither -1 and 0
+        if (next != (-1)) {
+            // neither -1 and 0
             // each protocol extented from URI supports the specific userinfo
-            _userinfo = (escaped)
-                    ? original.substring(0, next).toCharArray()
-                    : encode(original.substring(0, next), allowed_userinfo,
-                        charset);
+            _userinfo = (escaped) ? original.substring(0, next).toCharArray() : encode(original.substring(0, next), allowed_userinfo, charset);
             from = next + 1;
         }
         next = original.indexOf('[', from);
         if (next >= from) {
             next = original.indexOf(']', from);
-            if (next == -1) {
+            if (next == (-1)) {
                 throw new URIException(URIException.PARSING, "IPv6reference");
             }
             next++;
             // In IPv6reference, '[', ']' should be excluded
-            _host = (escaped)
-                    ? original.substring(from, next).toCharArray()
-                    : encode(original.substring(from, next),
-                        allowed_IPv6reference, charset);
+            _host = (escaped) ? original.substring(from, next).toCharArray() : encode(original.substring(from, next), allowed_IPv6reference, charset);
             // Set flag
             _is_IPv6reference = true;
-        } else { // only for !_is_IPv6reference
+        } else {
+            // only for !_is_IPv6reference
             next = original.indexOf(':', from);
-            if (next == -1) {
+            if (next == (-1)) {
                 next = original.length();
                 hasPort = false;
             }
@@ -2359,25 +2378,25 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
                 _authority = encode(original, allowed_reg_name, charset);
             }
         } else {
-            if (original.length() - 1 > next && hasPort
-                && original.charAt(next) == ':') { // not empty
+            if ((((original.length() - 1) > next) && hasPort) && (original.charAt(next) == ':')) {
+                // not empty
                 from = next + 1;
                 try {
                     _port = Integer.parseInt(original.substring(from));
                 } catch (NumberFormatException error) {
-                    throw new URIException(URIException.PARSING,
-                        "invalid port number");
+                    throw new URIException(URIException.PARSING, "invalid port number");
                 }
             }
             // set a server-based naming authority
             StringBuilder buf = new StringBuilder();
-            if (_userinfo != null) { // has_userinfo
+            if (_userinfo != null) {
+                // has_userinfo
                 buf.append(_userinfo);
                 buf.append('@');
             }
             if (_host != null) {
                 buf.append(_host);
-                if (_port != -1) {
+                if (_port != (-1)) {
                     buf.append(':');
                     buf.append(_port);
                 }
@@ -2403,11 +2422,12 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         }
         if (_is_net_path) {
             buf.append("//");
-            if (_authority != null) { // has_authority
+            if (_authority != null) {
+                // has_authority
                 buf.append(_authority);
             }
         }
-        if (_opaque != null && _is_opaque_part) {
+        if ((_opaque != null) && _is_opaque_part) {
             buf.append(_opaque);
         } else if (_path != null) {
             // _is_hier_part or _is_relativeURI
@@ -2415,7 +2435,8 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
                 buf.append(_path);
             }
         }
-        if (_query != null) { // has_query
+        if (_query != null) {
+            // has_query
             buf.append('?');
             buf.append(_query);
         }
@@ -2425,14 +2446,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ----------------------------------------------------------- Test methods
-
     /**
      * Tell whether or not this URI is absolute.
      *
      * @return true iif this URI is absoluteURI
      */
     public boolean isAbsoluteURI() {
-        return (_scheme != null);
+        return _scheme != null;
     }
 
     /**
@@ -2441,7 +2461,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return true iif this URI is relativeURI
      */
     public boolean isRelativeURI() {
-        return (_scheme == null);
+        return _scheme == null;
     }
 
     /**
@@ -2526,7 +2546,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return true iif this URI has userinfo
      */
     public boolean hasUserinfo() {
-        return (_userinfo != null);
+        return _userinfo != null;
     }
 
     /**
@@ -2562,7 +2582,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return true iif this URI has query
      */
     public boolean hasQuery() {
-        return (_query != null);
+        return _query != null;
     }
 
     /**
@@ -2571,14 +2591,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return true iif this URI has fragment
      */
     public boolean hasFragment() {
-        return (_fragment != null);
+        return _fragment != null;
     }
 
     // ---------------------------------------------------------------- Charset
-
     /**
      * Set the default charset of the protocol.
-     * 
+     *
      * The character set used to store files SHALL remain a local decision and
      * MAY depend on the capability of local operating systems. Prior to the
      * exchange of URIs they SHOULD be converted into a ISO/IEC 10646 format and
@@ -2586,10 +2605,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * URIs, will still allow backward compatibility with older systems because
      * the code set positions for ASCII characters are identical to the one byte
      * sequence in UTF-8.
-     * 
+     *
      * An individual URI scheme may require a single charset, define a default
      * charset, or provide a way to indicate the charset used.
-     * 
+     *
      * Always all the time, the setter method is always succeeded and throws
      * <code>DefaultCharsetChanged</code> exception. So API programmer must
      * follow the following way: <code><pre>
@@ -2610,23 +2629,22 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      *  </pre></code> The API programmer is responsible to set the correct
      * charset. And each application should remember its own charset to support.
      *
-     * @param charset the default charset for each protocol
-     * @throws DefaultCharsetChanged default charset changed
+     * @param charset
+     * 		the default charset for each protocol
+     * @throws DefaultCharsetChanged
+     * 		default charset changed
      */
-    public static void setDefaultProtocolCharset(String charset)
-            throws DefaultCharsetChanged {
-
+    public static void setDefaultProtocolCharset(String charset) throws DefaultCharsetChanged {
         defaultProtocolCharset = charset;
-        throw new DefaultCharsetChanged(DefaultCharsetChanged.PROTOCOL_CHARSET,
-            "the default protocol charset changed");
+        throw new DefaultCharsetChanged(DefaultCharsetChanged.PROTOCOL_CHARSET, "the default protocol charset changed");
     }
 
     /**
      * Get the default charset of the protocol.
-     * 
+     *
      * An individual URI scheme may require a single charset, define a default
      * charset, or provide a way to indicate the charset used.
-     * 
+     *
      * To work globally either requires support of a number of character sets
      * and to be able to convert between them, or the use of a single preferred
      * character set. For support of global compatibility it is STRONGLY
@@ -2648,20 +2666,18 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @see #getDefaultProtocolCharset
      */
     public String getProtocolCharset() {
-        return (protocolCharset != null)
-                ? protocolCharset
-                : defaultProtocolCharset;
+        return protocolCharset != null ? protocolCharset : defaultProtocolCharset;
     }
 
     /**
      * Set the default charset of the document.
-     * 
+     *
      * Notice that it will be possible to contain mixed characters (e.g.
      * ftp://host/KoreanNamespace/ChineseResource). To handle the Bi-directional
      * display of these character sets, the protocol charset could be simply
      * used again. Because it's not yet implemented that the insertion of BIDI
      * control characters at different points during composition is extracted.
-     * 
+     *
      * Always all the time, the setter method is always succeeded and throws
      * <code>DefaultCharsetChanged</code> exception. So API programmer must
      * follow the following way: <code><pre>
@@ -2682,15 +2698,14 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      *  </pre></code> The API programmer is responsible to set the correct
      * charset. And each application should remember its own charset to support.
      *
-     * @param charset the default charset for the document
-     * @throws DefaultCharsetChanged default charset changed
+     * @param charset
+     * 		the default charset for the document
+     * @throws DefaultCharsetChanged
+     * 		default charset changed
      */
-    public static void setDefaultDocumentCharset(String charset)
-            throws DefaultCharsetChanged {
-
+    public static void setDefaultDocumentCharset(String charset) throws DefaultCharsetChanged {
         defaultDocumentCharset = charset;
-        throw new DefaultCharsetChanged(DefaultCharsetChanged.DOCUMENT_CHARSET,
-            "the default document charset changed");
+        throw new DefaultCharsetChanged(DefaultCharsetChanged.DOCUMENT_CHARSET, "the default document charset changed");
     }
 
     /**
@@ -2721,7 +2736,6 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ------------------------------------------------------------- The scheme
-
     /**
      * Get the scheme.
      *
@@ -2737,15 +2751,14 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return the scheme null if undefined scheme
      */
     public String getScheme() {
-        return (_scheme == null) ? null : new String(_scheme);
+        return _scheme == null ? null : new String(_scheme);
     }
 
     // ---------------------------------------------------------- The authority
-
     /**
      * Set the authority. It can be one type of server, hostport, hostname,
      * IPv4address, IPv6reference and reg_name.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -2753,16 +2766,16 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      *
-     * @param escapedAuthority the raw escaped authority
-     * @throws URIException If {@link #parseAuthority(java.lang.String,boolean)}
-     *             fails
-     * @throws NullPointerException null authority
+     * @param escapedAuthority
+     * 		the raw escaped authority
+     * @throws URIException
+     * 		If {@link #parseAuthority(java.lang.String,boolean)}
+     * 		fails
+     * @throws NullPointerException
+     * 		null authority
      */
-    public void setRawAuthority(char[] escapedAuthority) throws URIException,
-            NullPointerException {
-
+    public void setRawAuthority(char[] escapedAuthority) throws NullPointerException, URIException {
         parseAuthority(new String(escapedAuthority), true);
         setURI();
     }
@@ -2772,13 +2785,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * IPv4address, IPv6reference and reg_name. Note that there is no
      * setAuthority method by the escape encoding reason.
      *
-     * @param escapedAuthority the escaped authority string
-     * @throws URIException If {@link #parseAuthority(java.lang.String,boolean)}
-     *             fails
+     * @param escapedAuthority
+     * 		the escaped authority string
+     * @throws URIException
+     * 		If {@link #parseAuthority(java.lang.String,boolean)}
+     * 		fails
      */
-    public void setEscapedAuthority(String escapedAuthority)
-            throws URIException {
-
+    public void setEscapedAuthority(String escapedAuthority) throws URIException {
         parseAuthority(escapedAuthority, true);
         setURI();
     }
@@ -2798,22 +2811,21 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return the escaped authority
      */
     public String getEscapedAuthority() {
-        return (_authority == null) ? null : new String(_authority);
+        return _authority == null ? null : new String(_authority);
     }
 
     /**
      * Get the authority.
      *
      * @return the authority
-     * @throws URIException If {@link #decode} fails
+     * @throws URIException
+     * 		If {@link #decode} fails
      */
     public String getAuthority() throws URIException {
-        return (_authority == null) ? null : decode(_authority,
-            getProtocolCharset());
+        return _authority == null ? null : decode(_authority, getProtocolCharset());
     }
 
     // ----------------------------------------------------------- The userinfo
-
     /**
      * Get the raw-escaped userinfo.
      *
@@ -2831,26 +2843,25 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @see #getAuthority
      */
     public String getEscapedUserinfo() {
-        return (_userinfo == null) ? null : new String(_userinfo);
+        return _userinfo == null ? null : new String(_userinfo);
     }
 
     /**
      * Get the userinfo.
      *
      * @return the userinfo
-     * @throws URIException If {@link #decode} fails
+     * @throws URIException
+     * 		If {@link #decode} fails
      * @see #getAuthority
      */
     public String getUserinfo() throws URIException {
-        return (_userinfo == null) ? null : decode(_userinfo,
-            getProtocolCharset());
+        return _userinfo == null ? null : decode(_userinfo, getProtocolCharset());
     }
 
     // --------------------------------------------------------------- The host
-
     /**
      * Get the host.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -2858,7 +2869,6 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      *
      * @return the host
      * @see #getAuthority
@@ -2869,7 +2879,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Get the host.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -2877,10 +2887,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      *
      * @return the host
-     * @throws URIException If {@link #decode} fails
+     * @throws URIException
+     * 		If {@link #decode} fails
      * @see #getAuthority
      */
     public String getHost() throws URIException {
@@ -2891,31 +2901,31 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // --------------------------------------------------------------- The port
-
     /**
      * Get the port. In order to get the specfic default port, the specific
      * protocol-supported class extended from the URI class should be used. It
      * has the server-based naming authority.
      *
      * @return the port if -1, it has the default port for the scheme or the
-     *         server-based naming authority is not supported in the specific
-     *         URI.
+    server-based naming authority is not supported in the specific
+    URI.
      */
     public int getPort() {
         return _port;
     }
 
     // --------------------------------------------------------------- The path
-
     /**
      * Set the raw-escaped path.
      *
-     * @param escapedPath the path character sequence
-     * @throws URIException encoding error or not proper for initial instance
+     * @param escapedPath
+     * 		the path character sequence
+     * @throws URIException
+     * 		encoding error or not proper for initial instance
      * @see #encode
      */
     public void setRawPath(char[] escapedPath) throws URIException {
-        if (escapedPath == null || escapedPath.length == 0) {
+        if ((escapedPath == null) || (escapedPath.length == 0)) {
             _path = _opaque = escapedPath;
             setURI();
             return;
@@ -2924,12 +2934,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         escapedPath = removeFragmentIdentifier(escapedPath);
         if (_is_net_path || _is_abs_path) {
             if (escapedPath[0] != '/') {
-                throw new URIException(URIException.PARSING,
-                    "not absolute path");
+                throw new URIException(URIException.PARSING, "not absolute path");
             }
             if (!validate(escapedPath, abs_path)) {
-                throw new URIException(URIException.ESCAPING,
-                    "escaped absolute path not valid");
+                throw new URIException(URIException.ESCAPING, "escaped absolute path not valid");
             }
             _path = escapedPath;
         } else if (_is_rel_path) {
@@ -2937,19 +2945,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             if (at == 0) {
                 throw new URIException(URIException.PARSING, "incorrect path");
             }
-            if (at > 0 && !validate(escapedPath, 0, at - 1, rel_segment)
-                && !validate(escapedPath, at, -1, abs_path) || at < 0
-                && !validate(escapedPath, 0, -1, rel_segment)) {
-
-                throw new URIException(URIException.ESCAPING,
-                    "escaped relative path not valid");
+            if ((((at > 0) && (!validate(escapedPath, 0, at - 1, rel_segment))) && (!validate(escapedPath, at, -1, abs_path))) || ((at < 0) && (!validate(escapedPath, 0, -1, rel_segment)))) {
+                throw new URIException(URIException.ESCAPING, "escaped relative path not valid");
             }
             _path = escapedPath;
         } else if (_is_opaque_part) {
-            if (!uric_no_slash.get(escapedPath[0])
-                && !validate(escapedPath, 1, -1, uric)) {
-                throw new URIException(URIException.ESCAPING,
-                    "escaped opaque part not valid");
+            if ((!uric_no_slash.get(escapedPath[0])) && (!validate(escapedPath, 1, -1, uric))) {
+                throw new URIException(URIException.ESCAPING, "escaped opaque part not valid");
             }
             _opaque = escapedPath;
         } else {
@@ -2961,8 +2963,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Set the escaped path.
      *
-     * @param escapedPath the escaped path string
-     * @throws URIException encoding error or not proper for initial instance
+     * @param escapedPath
+     * 		the escaped path string
+     * @throws URIException
+     * 		encoding error or not proper for initial instance
      * @see #encode
      */
     public void setEscapedPath(String escapedPath) throws URIException {
@@ -2977,34 +2981,32 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Set the path.
      *
-     * @param path the path string
-     * @throws URIException set incorrectly or fragment only
+     * @param path
+     * 		the path string
+     * @throws URIException
+     * 		set incorrectly or fragment only
      * @see #encode
      */
     public void setPath(String path) throws URIException {
-
-        if (path == null || path.length() == 0) {
+        if ((path == null) || (path.length() == 0)) {
             _path = _opaque = (path == null) ? null : path.toCharArray();
             setURI();
             return;
         }
         // set the charset to do escape encoding
         String charset = getProtocolCharset();
-
         if (_is_net_path || _is_abs_path) {
             _path = encode(path, allowed_abs_path, charset);
         } else if (_is_rel_path) {
             StringBuilder buff = new StringBuilder(path.length());
             int at = path.indexOf('/');
-            if (at == 0) { // never 0
-                throw new URIException(URIException.PARSING,
-                    "incorrect relative path");
+            if (at == 0) {
+                // never 0
+                throw new URIException(URIException.PARSING, "incorrect relative path");
             }
             if (at > 0) {
-                buff.append(encode(path.substring(0, at), allowed_rel_path,
-                    charset));
-                buff.append(encode(path.substring(at), allowed_abs_path,
-                    charset));
+                buff.append(encode(path.substring(0, at), allowed_rel_path, charset));
+                buff.append(encode(path.substring(at), allowed_abs_path, charset));
             } else {
                 buff.append(encode(path, allowed_rel_path, charset));
             }
@@ -3023,29 +3025,29 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Resolve the base and relative path.
      *
-     * @param basePath a character array of the basePath
-     * @param relPath a character array of the relPath
+     * @param basePath
+     * 		a character array of the basePath
+     * @param relPath
+     * 		a character array of the relPath
      * @return the resolved path
-     * @throws URIException no more higher path level to be resolved
+     * @throws URIException
+     * 		no more higher path level to be resolved
      */
-    protected char[] resolvePath(char[] basePath, char[] relPath)
-            throws URIException {
-
+    protected char[] resolvePath(char[] basePath, char[] relPath) throws URIException {
         // REMINDME: paths are never null
         String base = (basePath == null) ? "" : new String(basePath);
-
         // _path could be empty
-        if (relPath == null || relPath.length == 0) {
+        if ((relPath == null) || (relPath.length == 0)) {
             return normalize(basePath);
         } else if (relPath[0] == '/') {
             return normalize(relPath);
         } else {
             int at = base.lastIndexOf('/');
-            if (at != -1) {
+            if (at != (-1)) {
                 basePath = base.substring(0, at + 1).toCharArray();
             }
             StringBuilder buff = new StringBuilder(base.length() + relPath.length);
-            buff.append((at != -1) ? base.substring(0, at + 1) : "/");
+            buff.append(at != (-1) ? base.substring(0, at + 1) : "/");
             buff.append(relPath);
             return normalize(buff.toString().toCharArray());
         }
@@ -3056,12 +3058,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * last namespace is a collection, the slash mark ('/') should be ended with
      * at the last character of the path string.
      *
-     * @param path the path
+     * @param path
+     * 		the path
      * @return the current hierarchy level
-     * @throws URIException no hierarchy level
+     * @throws URIException
+     * 		no hierarchy level
      */
     protected char[] getRawCurrentHierPath(char[] path) throws URIException {
-
         if (_is_opaque_part) {
             throw new URIException(URIException.PARSING, "no hierarchy level");
         }
@@ -3073,7 +3076,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         int last = buff.lastIndexOf('/');
         if (last == 0) {
             return rootPath;
-        } else if (first != last && last != -1) {
+        } else if ((first != last) && (last != (-1))) {
             return buff.substring(0, last).toCharArray();
         }
         // FIXME: it could be a document on the server side
@@ -3084,72 +3087,78 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Get the raw-escaped current hierarchy level.
      *
      * @return the raw-escaped current hierarchy level
-     * @throws URIException If {@link #getRawCurrentHierPath(char[])} fails.
+     * @throws URIException
+     * 		If {@link #getRawCurrentHierPath(char[])} fails.
      */
     public char[] getRawCurrentHierPath() throws URIException {
-        return (_path == null) ? null : getRawCurrentHierPath(_path);
+        return _path == null ? null : getRawCurrentHierPath(_path);
     }
 
     /**
      * Get the escaped current hierarchy level.
      *
      * @return the escaped current hierarchy level
-     * @throws URIException If {@link #getRawCurrentHierPath(char[])} fails.
+     * @throws URIException
+     * 		If {@link #getRawCurrentHierPath(char[])} fails.
      */
     public String getEscapedCurrentHierPath() throws URIException {
         char[] path = getRawCurrentHierPath();
-        return (path == null) ? null : new String(path);
+        return path == null ? null : new String(path);
     }
 
     /**
      * Get the current hierarchy level.
      *
      * @return the current hierarchy level
-     * @throws URIException If {@link #getRawCurrentHierPath(char[])} fails.
+     * @throws URIException
+     * 		If {@link #getRawCurrentHierPath(char[])} fails.
      * @see #decode
      */
     public String getCurrentHierPath() throws URIException {
         char[] path = getRawCurrentHierPath();
-        return (path == null) ? null : decode(path, getProtocolCharset());
+        return path == null ? null : decode(path, getProtocolCharset());
     }
 
     /**
      * Get the level above the this hierarchy level.
      *
      * @return the raw above hierarchy level
-     * @throws URIException If {@link #getRawCurrentHierPath(char[])} fails.
+     * @throws URIException
+     * 		If {@link #getRawCurrentHierPath(char[])} fails.
      */
     public char[] getRawAboveHierPath() throws URIException {
         char[] path = getRawCurrentHierPath();
-        return (path == null) ? null : getRawCurrentHierPath(path);
+        return path == null ? null : getRawCurrentHierPath(path);
     }
 
     /**
      * Get the level above the this hierarchy level.
      *
      * @return the raw above hierarchy level
-     * @throws URIException If {@link #getRawCurrentHierPath(char[])} fails.
+     * @throws URIException
+     * 		If {@link #getRawCurrentHierPath(char[])} fails.
      */
     public String getEscapedAboveHierPath() throws URIException {
         char[] path = getRawAboveHierPath();
-        return (path == null) ? null : new String(path);
+        return path == null ? null : new String(path);
     }
 
     /**
      * Get the level above the this hierarchy level.
      *
      * @return the above hierarchy level
-     * @throws URIException If {@link #getRawCurrentHierPath(char[])} fails.
+     * @throws URIException
+     * 		If {@link #getRawCurrentHierPath(char[])} fails.
      * @see #decode
      */
     public String getAboveHierPath() throws URIException {
         char[] path = getRawAboveHierPath();
-        return (path == null) ? null : decode(path, getProtocolCharset());
+        return path == null ? null : decode(path, getProtocolCharset());
     }
 
     /**
      * Get the raw-escaped path.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -3157,7 +3166,6 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      *
      * @return the raw-escaped path
      */
@@ -3167,7 +3175,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Get the escaped path.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -3177,18 +3185,17 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      *
      * @return the escaped path string
      */
     public String getEscapedPath() {
         char[] path = getRawPath();
-        return (path == null) ? null : new String(path);
+        return path == null ? null : new String(path);
     }
 
     /**
      * Get the path.
-     * 
+     *
      * <blockquote>
      *
      * <pre>
@@ -3196,15 +3203,15 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * </pre>
      *
      * </blockquote>
-     * 
      *
      * @return the path string
-     * @throws URIException If {@link #decode} fails.
+     * @throws URIException
+     * 		If {@link #decode} fails.
      * @see #decode
      */
     public String getPath() throws URIException {
         char[] path = getRawPath();
-        return (path == null) ? null : decode(path, getProtocolCharset());
+        return path == null ? null : decode(path, getProtocolCharset());
     }
 
     /**
@@ -3216,7 +3223,6 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         if (_path == null) {
             return null;
         }
-
         int at = 0;
         for (int i = _path.length - 1; i >= 0; i--) {
             if (_path[i] == '/') {
@@ -3237,33 +3243,31 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      */
     public String getEscapedName() {
         char[] basename = getRawName();
-        return (basename == null) ? null : new String(basename);
+        return basename == null ? null : new String(basename);
     }
 
     /**
      * Get the basename of the path.
      *
      * @return the basename string
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      * @see #decode
      */
     public String getName() throws URIException {
         char[] basename = getRawName();
-        return (basename == null) ? null : decode(getRawName(),
-            getProtocolCharset());
+        return basename == null ? null : decode(getRawName(), getProtocolCharset());
     }
 
     // ----------------------------------------------------- The path and query
-
     /**
      * Get the raw-escaped path and query.
      *
      * @return the raw-escaped path and query
      */
     public char[] getRawPathQuery() {
-
-        if (_path == null && _query == null) {
+        if ((_path == null) && (_query == null)) {
             return null;
         }
         StringBuilder buff = new StringBuilder();
@@ -3284,33 +3288,34 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      */
     public String getEscapedPathQuery() {
         char[] rawPathQuery = getRawPathQuery();
-        return (rawPathQuery == null) ? null : new String(rawPathQuery);
+        return rawPathQuery == null ? null : new String(rawPathQuery);
     }
 
     /**
      * Get the path and query.
      *
      * @return the path and query string.
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      * @see #decode
      */
     public String getPathQuery() throws URIException {
         char[] rawPathQuery = getRawPathQuery();
-        return (rawPathQuery == null) ? null : decode(rawPathQuery,
-            getProtocolCharset());
+        return rawPathQuery == null ? null : decode(rawPathQuery, getProtocolCharset());
     }
 
     // -------------------------------------------------------------- The query
-
     /**
      * Set the raw-escaped query.
      *
-     * @param escapedQuery the raw-escaped query
-     * @throws URIException escaped query not valid
+     * @param escapedQuery
+     * 		the raw-escaped query
+     * @throws URIException
+     * 		escaped query not valid
      */
     public void setRawQuery(char[] escapedQuery) throws URIException {
-        if (escapedQuery == null || escapedQuery.length == 0) {
+        if ((escapedQuery == null) || (escapedQuery.length == 0)) {
             _query = escapedQuery;
             setURI();
             return;
@@ -3318,8 +3323,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         // remove the fragment identifier
         escapedQuery = removeFragmentIdentifier(escapedQuery);
         if (!validate(escapedQuery, query)) {
-            throw new URIException(URIException.ESCAPING,
-                "escaped query not valid");
+            throw new URIException(URIException.ESCAPING, "escaped query not valid");
         }
         _query = escapedQuery;
         setURI();
@@ -3328,8 +3332,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Set the escaped query string.
      *
-     * @param escapedQuery the escaped query string
-     * @throws URIException escaped query not valid
+     * @param escapedQuery
+     * 		the escaped query string
+     * @throws URIException
+     * 		escaped query not valid
      */
     public void setEscapedQuery(String escapedQuery) throws URIException {
         if (escapedQuery == null) {
@@ -3342,23 +3348,25 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Set the query.
-     * 
+     *
      * When a query string is not misunderstood the reserved special characters
      * ("&amp;", "=", "+", ",", and "$") within a query component, it is
      * recommended to use in encoding the whole query with this method.
-     * 
+     *
      * The additional APIs for the special purpose using by the reserved special
      * characters used in each protocol are implemented in each protocol classes
      * inherited from <code>URI</code>. So refer to the same-named APIs
      * implemented in each specific protocol instance.
      *
-     * @param query the query string.
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @param query
+     * 		the query string.
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      * @see #encode
      */
     public void setQuery(String query) throws URIException {
-        if (query == null || query.length() == 0) {
+        if ((query == null) || (query.length() == 0)) {
             _query = (query == null) ? null : query.toCharArray();
             setURI();
             return;
@@ -3381,38 +3389,39 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return the escaped query string
      */
     public String getEscapedQuery() {
-        return (_query == null) ? null : new String(_query);
+        return _query == null ? null : new String(_query);
     }
 
     /**
      * Get the query.
      *
      * @return the query string.
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      * @see #decode
      */
     public String getQuery() throws URIException {
-        return (_query == null) ? null : decode(_query, getProtocolCharset());
+        return _query == null ? null : decode(_query, getProtocolCharset());
     }
 
     // ----------------------------------------------------------- The fragment
-
     /**
      * Set the raw-escaped fragment.
      *
-     * @param escapedFragment the raw-escaped fragment
-     * @throws URIException escaped fragment not valid
+     * @param escapedFragment
+     * 		the raw-escaped fragment
+     * @throws URIException
+     * 		escaped fragment not valid
      */
     public void setRawFragment(char[] escapedFragment) throws URIException {
-        if (escapedFragment == null || escapedFragment.length == 0) {
+        if ((escapedFragment == null) || (escapedFragment.length == 0)) {
             _fragment = escapedFragment;
             hash = 0;
             return;
         }
         if (!validate(escapedFragment, fragment)) {
-            throw new URIException(URIException.ESCAPING,
-                "escaped fragment not valid");
+            throw new URIException(URIException.ESCAPING, "escaped fragment not valid");
         }
         _fragment = escapedFragment;
         hash = 0;
@@ -3421,8 +3430,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Set the escaped fragment string.
      *
-     * @param escapedFragment the escaped fragment string
-     * @throws URIException escaped fragment not valid
+     * @param escapedFragment
+     * 		the escaped fragment string
+     * @throws URIException
+     * 		escaped fragment not valid
      */
     public void setEscapedFragment(String escapedFragment) throws URIException {
         if (escapedFragment == null) {
@@ -3436,11 +3447,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Set the fragment.
      *
-     * @param fragment the fragment string.
-     * @throws URIException If an error occurs.
+     * @param fragment
+     * 		the fragment string.
+     * @throws URIException
+     * 		If an error occurs.
      */
     public void setFragment(String fragment) throws URIException {
-        if (fragment == null || fragment.length() == 0) {
+        if ((fragment == null) || (fragment.length() == 0)) {
             _fragment = (fragment == null) ? null : fragment.toCharArray();
             hash = 0;
             return;
@@ -3451,13 +3464,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Get the raw-escaped fragment.
-     * 
+     *
      * The optional fragment identifier is not part of a URI, but is often used
      * in conjunction with a URI.
-     * 
+     *
      * The format and interpretation of fragment identifiers is dependent on the
      * media type [RFC2046] of the retrieval result.
-     * 
+     *
      * A fragment identifier is only meaningful when a URI reference is intended
      * for retrieval and the result of that retrieval is a document for which
      * the identified fragment is consistently defined.
@@ -3474,28 +3487,28 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return the escaped fragment string
      */
     public String getEscapedFragment() {
-        return (_fragment == null) ? null : new String(_fragment);
+        return _fragment == null ? null : new String(_fragment);
     }
 
     /**
      * Get the fragment.
      *
      * @return the fragment string
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      * @see #decode
      */
     public String getFragment() throws URIException {
-        return (_fragment == null) ? null : decode(_fragment,
-            getProtocolCharset());
+        return _fragment == null ? null : decode(_fragment, getProtocolCharset());
     }
 
     // ------------------------------------------------------------- Utilities
-
     /**
      * Remove the fragment identifier of the given component.
      *
-     * @param component the component that a fragment may be included
+     * @param component
+     * 		the component that a fragment may be included
      * @return the component that the fragment identifier is removed
      */
     protected char[] removeFragmentIdentifier(char[] component) {
@@ -3503,7 +3516,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             return null;
         }
         int lastIndex = new String(component).indexOf('#');
-        if (lastIndex != -1) {
+        if (lastIndex != (-1)) {
             component = new String(component).substring(0, lastIndex).toCharArray();
         }
         return component;
@@ -3511,22 +3524,21 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
 
     /**
      * Normalize the given hier path part.
-     * 
+     *
      * Algorithm taken from URI reference parser at
      * http://www.apache.org/~fielding/uri/rev-2002/issues.html.
      *
-     * @param path the path to normalize
+     * @param path
+     * 		the path to normalize
      * @return the normalized path
-     * @throws URIException no more higher path level to be normalized
+     * @throws URIException
+     * 		no more higher path level to be normalized
      */
     protected char[] normalize(char[] path) throws URIException {
-
         if (path == null) {
             return null;
         }
-
         String normalized = new String(path);
-
         // If the buffer begins with "./" or "../", the "." or ".." is removed.
         if (normalized.startsWith("./")) {
             normalized = normalized.substring(1);
@@ -3535,65 +3547,55 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         } else if (normalized.startsWith("..")) {
             normalized = normalized.substring(2);
         }
-
         // All occurrences of "/./" in the buffer are replaced with "/"
         int index = -1;
-        while ((index = normalized.indexOf("/./")) != -1) {
-            normalized = normalized.substring(0, index)
-                + normalized.substring(index + 2);
-        }
-
+        while ((index = normalized.indexOf("/./")) != (-1)) {
+            normalized = normalized.substring(0, index) + normalized.substring(index + 2);
+        } 
         // If the buffer ends with "/.", the "." is removed.
         if (normalized.endsWith("/.")) {
             normalized = normalized.substring(0, normalized.length() - 1);
         }
-
         int startIndex = 0;
-
         // All occurrences of "/<segment>/../" in the buffer, where ".."
         // and <segment> are complete path segments, are iteratively replaced
         // with "/" in order from left to right until no matching pattern
         // remains.
         // If the buffer ends with "/<segment>/..", that is also replaced
         // with "/". Note that <segment> may be empty.
-        while ((index = normalized.indexOf("/../", startIndex)) != -1) {
+        while ((index = normalized.indexOf("/../", startIndex)) != (-1)) {
             int slashIndex = normalized.lastIndexOf('/', index - 1);
             if (slashIndex >= 0) {
-                normalized = normalized.substring(0, slashIndex)
-                    + normalized.substring(index + 3);
+                normalized = normalized.substring(0, slashIndex) + normalized.substring(index + 3);
             } else {
                 startIndex = index + 3;
             }
-        }
+        } 
         if (normalized.endsWith("/..")) {
-            int slashIndex = normalized.lastIndexOf('/',
-                normalized.length() - 4);
+            int slashIndex = normalized.lastIndexOf('/', normalized.length() - 4);
             if (slashIndex >= 0) {
                 normalized = normalized.substring(0, slashIndex + 1);
             }
         }
-
         // All prefixes of "<segment>/../" in the buffer, where ".."
         // and <segment> are complete path segments, are iteratively replaced
         // with "/" in order from left to right until no matching pattern
         // remains.
         // If the buffer ends with "<segment>/..", that is also replaced
         // with "/". Note that <segment> may be empty.
-        while ((index = normalized.indexOf("/../")) != -1) {
+        while ((index = normalized.indexOf("/../")) != (-1)) {
             int slashIndex = normalized.lastIndexOf('/', index - 1);
             if (slashIndex >= 0) {
                 break;
             }
             normalized = normalized.substring(index + 3);
-        }
+        } 
         if (normalized.endsWith("/..")) {
-            int slashIndex = normalized.lastIndexOf('/',
-                normalized.length() - 4);
+            int slashIndex = normalized.lastIndexOf('/', normalized.length() - 4);
             if (slashIndex < 0) {
                 normalized = "/";
             }
         }
-
         return normalized.toCharArray();
     }
 
@@ -3602,7 +3604,8 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * performed on URIs with an absolute path. Calling this method on a
      * relative path URI will have no effect.
      *
-     * @throws URIException no more higher path level to be normalized
+     * @throws URIException
+     * 		no more higher path level to be normalized
      * @see #isAbsPath()
      */
     public void normalize() throws URIException {
@@ -3615,16 +3618,17 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Test if the first array is equal to the second array.
      *
-     * @param first the first character array
-     * @param second the second character array
+     * @param first
+     * 		the first character array
+     * @param second
+     * 		the second character array
      * @return true if they're equal
      */
     protected boolean equals(char[] first, char[] second) {
-
-        if (first == null && second == null) {
+        if ((first == null) && (second == null)) {
             return true;
         }
-        if (first == null || second == null) {
+        if ((first == null) || (second == null)) {
             return false;
         }
         if (first.length != second.length) {
@@ -3641,11 +3645,11 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Test an object if this URI is equal to another.
      *
-     * @param obj an object to compare
+     * @param obj
+     * 		an object to compare
      * @return true if two URI objects are equal
      */
     public boolean equals(Object obj) {
-
         // normalize and test each components
         if (obj == this) {
             return true;
@@ -3653,7 +3657,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         if (!(obj instanceof URI)) {
             return false;
         }
-        URI another = (URI) obj;
+        URI another = ((URI) (obj));
         // scheme
         if (!equals(_scheme, another._scheme)) {
             return false;
@@ -3683,34 +3687,34 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ---------------------------------------------------------- Serialization
-
     /**
      * Write the content of this URI.
      *
-     * @param oos the object-output stream
-     * @throws IOException If an IO problem occurs.
+     * @param oos
+     * 		the object-output stream
+     * @throws IOException
+     * 		If an IO problem occurs.
      */
     private void writeObject(ObjectOutputStream oos) throws IOException {
-
         oos.defaultWriteObject();
     }
 
     /**
      * Read a URI.
      *
-     * @param ois the object-input stream
-     * @throws ClassNotFoundException If one of the classes specified in the
-     *             input stream cannot be found.
-     * @throws IOException If an IO problem occurs.
+     * @param ois
+     * 		the object-input stream
+     * @throws ClassNotFoundException
+     * 		If one of the classes specified in the
+     * 		input stream cannot be found.
+     * @throws IOException
+     * 		If an IO problem occurs.
      */
-    private void readObject(ObjectInputStream ois)
-            throws ClassNotFoundException, IOException {
-
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject();
     }
 
     // -------------------------------------------------------------- Hash code
-
     /**
      * Return a hash code for this URI.
      *
@@ -3721,13 +3725,13 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             char[] c = _uri;
             if (c != null) {
                 for (int i = 0, len = c.length; i < len; i++) {
-                    hash = 31 * hash + c[i];
+                    hash = (31 * hash) + c[i];
                 }
             }
             c = _fragment;
             if (c != null) {
                 for (int i = 0, len = c.length; i < len; i++) {
-                    hash = 31 * hash + c[i];
+                    hash = (31 * hash) + c[i];
                 }
             }
         }
@@ -3735,17 +3739,17 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ------------------------------------------------------------- Comparison
-
     /**
      * Compare this URI to another object.
      *
-     * @param another the object to be compared.
+     * @param another
+     * 		the object to be compared.
      * @return 0, if it's same, -1, if failed, first being compared with in the
-     *         authority component
-     * @throws ClassCastException not URI argument
+    authority component
+     * @throws ClassCastException
+     * 		not URI argument
      */
     public int compareTo(URI another) {
-
         if (!equals(_authority, another.getRawAuthority())) {
             return -1;
         }
@@ -3753,21 +3757,18 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ------------------------------------------------------------------ Clone
-
     /**
      * Create and return a copy of this object, the URI-reference containing the
      * userinfo component. Notice that the whole URI-reference including the
      * userinfo component counld not be gotten as a <code>String</code>.
-     * 
+     *
      * To copy the identical <code>URI</code> object including the userinfo
      * component, it should be used.
      *
      * @return a clone of this instance
      */
     public synchronized Object clone() throws CloneNotSupportedException {
-
-        URI instance = (URI) super.clone();
-
+        URI instance = ((URI) (super.clone()));
         instance._uri = _uri;
         instance._scheme = _scheme;
         instance._opaque = _opaque;
@@ -3791,21 +3792,19 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         instance._is_hostname = _is_hostname;
         instance._is_IPv4address = _is_IPv4address;
         instance._is_IPv6reference = _is_IPv6reference;
-
         return instance;
     }
 
     // ------------------------------------------------------------ Get the URI
-
     /**
      * It can be gotten the URI character sequence. It's raw-escaped. For the
      * purpose of the protocol to be transported, it will be useful.
-     * 
+     *
      * It is clearly unwise to use a URL that contains a password which is
      * intended to be secret. In particular, the use of a password within the
      * 'userinfo' component of a URL is strongly disrecommended except in those
      * rare cases where the 'password' parameter is intended to be public.
-     * 
+     *
      * When you want to get each part of the userinfo, you need to use the
      * specific methods in the specific URL. It depends on the specific URL.
      *
@@ -3822,19 +3821,20 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * @return the escaped URI string
      */
     public String getEscapedURI() {
-        return (_uri == null) ? null : new String(_uri);
+        return _uri == null ? null : new String(_uri);
     }
 
     /**
      * It can be gotten the URI character sequence.
      *
      * @return the original URI string
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *             character encoding
+     * @throws URIException
+     * 		incomplete trailing escape pattern or unsupported
+     * 		character encoding
      * @see #decode
      */
     public String getURI() throws URIException {
-        return (_uri == null) ? null : decode(_uri, getProtocolCharset());
+        return _uri == null ? null : decode(_uri, getProtocolCharset());
     }
 
     /**
@@ -3850,7 +3850,7 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             return _fragment;
         }
         // if _uri != null && _fragment != null
-        String uriReference = new String(_uri) + "#" + new String(_fragment);
+        String uriReference = (new String(_uri) + "#") + new String(_fragment);
         return uriReference.toCharArray();
     }
 
@@ -3861,28 +3861,28 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      */
     public String getEscapedURIReference() {
         char[] uriReference = getRawURIReference();
-        return (uriReference == null) ? null : new String(uriReference);
+        return uriReference == null ? null : new String(uriReference);
     }
 
     /**
      * Get the original URI reference string.
      *
      * @return the original URI reference string
-     * @throws URIException If {@link #decode} fails.
+     * @throws URIException
+     * 		If {@link #decode} fails.
      */
     public String getURIReference() throws URIException {
         char[] uriReference = getRawURIReference();
-        return (uriReference == null) ? null : decode(uriReference,
-            getProtocolCharset());
+        return uriReference == null ? null : decode(uriReference, getProtocolCharset());
     }
 
     /**
      * Get the escaped URI string.
-     * 
+     *
      * On the document, the URI-reference form is only used without the userinfo
      * component like http://jakarta.apache.org/ by the security reason. But the
      * URI-reference form with the userinfo component could be parsed.
-     * 
+     *
      * In other words, this URI and any its subclasses must not expose the
      * URI-reference expression with the userinfo component like
      * http://user:password@hostport/restricted_zone.<br>
@@ -3898,21 +3898,20 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     }
 
     // ------------------------------------------------------------ Inner class
-
     /**
      * The charset-changed normal operation to represent to be required to alert
      * to user the fact the default charset is changed.
      */
     @SuppressWarnings("serial")
     public static class DefaultCharsetChanged extends SlingException {
-
         // ------------------------------------------------------- constructors
-
         /**
          * The constructor with a reason string and its code arguments.
          *
-         * @param reasonCode the reason code
-         * @param reason the reason
+         * @param reasonCode
+         * 		the reason code
+         * @param reason
+         * 		the reason
          */
         public DefaultCharsetChanged(int reasonCode, String reason) {
             super(reason);
@@ -3921,26 +3920,33 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         }
 
         // ---------------------------------------------------------- constants
-
-        /** No specified reason code. */
+        /**
+         * No specified reason code.
+         */
         public static final int UNKNOWN = 0;
 
-        /** Protocol charset changed. */
+        /**
+         * Protocol charset changed.
+         */
         public static final int PROTOCOL_CHARSET = 1;
 
-        /** Document charset changed. */
+        /**
+         * Document charset changed.
+         */
         public static final int DOCUMENT_CHARSET = 2;
 
         // ------------------------------------------------- instance variables
-
-        /** The reason code. */
+        /**
+         * The reason code.
+         */
         private int reasonCode;
 
-        /** The reason message. */
+        /**
+         * The reason message.
+         */
         private String reason;
 
         // ------------------------------------------------------------ methods
-
         /**
          * Get the reason code.
          *
@@ -3958,20 +3964,21 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         public String getReason() {
             return reason;
         }
-
     }
 
     /**
      * A mapping to determine the (somewhat arbitrarily) preferred charset for a
      * given locale. Supports all locales recognized in JDK 1.1.
-     * 
+     *
      * The distribution of this class is Servlets.com. It was originally written
      * by Jason Hunter [jhunter at acm.org] and used by with permission.
      */
     public static class LocaleToCharsetMap {
-
-        /** A mapping of language code to charset */
+        /**
+         * A mapping of language code to charset
+         */
         private static final HashMap<String, String> LOCALE_TO_CHARSET_MAP;
+
         static {
             LOCALE_TO_CHARSET_MAP = new HashMap<String, String>();
             LOCALE_TO_CHARSET_MAP.put("ar", "ISO-8859-6");
@@ -4018,9 +4025,10 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
         /**
          * Get the preferred charset for the given locale.
          *
-         * @param locale the locale
+         * @param locale
+         * 		the locale
          * @return the preferred charset or null if the locale is not
-         *         recognized.
+        recognized.
          */
         public static String getCharset(Locale locale) {
             // try for an full name match (may include country)
@@ -4028,45 +4036,39 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
             if (charset != null) {
                 return charset;
             }
-
             // if a full name didn't match, try just the language
             charset = LOCALE_TO_CHARSET_MAP.get(locale.getLanguage());
-            return charset; // may be null
-        }
+            return charset;// may be null
 
+        }
     }
 
     // from EncodingUtils...
-
     /**
      * Converts the specified string to a byte array. If the charset is not
      * supported the default system charset is used.
      *
-     * @param data the string to be encoded
-     * @param charset the desired character encoding
+     * @param data
+     * 		the string to be encoded
+     * @param charset
+     * 		the desired character encoding
      * @return The resulting byte array.
      * @since 3.0
      */
     private static byte[] getBytes(final String data, String charset) {
-
         if (data == null) {
             throw new IllegalArgumentException("data may not be null");
         }
-
-        if (charset == null || charset.length() == 0) {
-            throw new IllegalArgumentException(
-                "charset may not be null or empty");
+        if ((charset == null) || (charset.length() == 0)) {
+            throw new IllegalArgumentException("charset may not be null or empty");
         }
-
         try {
             return data.getBytes(charset);
         } catch (UnsupportedEncodingException e) {
-
             // if (LOG.isWarnEnabled()) {
             // LOG.warn("Unsupported encoding: " + charset +
             // ". System encoding used.");
             // }
-
             return data.getBytes();
         }
     }
@@ -4076,18 +4078,19 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * to be used when decoding content of HTTP elements (such as response
      * headers)
      *
-     * @param data the byte array to be encoded
-     * @param offset the index of the first byte to encode
-     * @param length the number of bytes to encode
+     * @param data
+     * 		the byte array to be encoded
+     * @param offset
+     * 		the index of the first byte to encode
+     * @param length
+     * 		the number of bytes to encode
      * @return The string representation of the byte array
      * @since 3.0
      */
     private static String getAsciiString(final byte[] data) {
-
         if (data == null) {
             throw new IllegalArgumentException("Parameter may not be null");
         }
-
         try {
             return new String(data, "US-ASCII");
         } catch (UnsupportedEncodingException e) {
@@ -4099,26 +4102,23 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Converts the byte array of HTTP content characters to a string. If the
      * specified charset is not supported, default system encoding is used.
      *
-     * @param data the byte array to be encoded
-     * @param charset the desired character encoding
+     * @param data
+     * 		the byte array to be encoded
+     * @param charset
+     * 		the desired character encoding
      * @return The result of the conversion.
      * @since 3.0
      */
     public static String getString(final byte[] data, String charset) {
-
         if (data == null) {
             throw new IllegalArgumentException("Parameter may not be null");
         }
-
-        if (charset == null || charset.length() == 0) {
-            throw new IllegalArgumentException(
-                "charset may not be null or empty");
+        if ((charset == null) || (charset.length() == 0)) {
+            throw new IllegalArgumentException("charset may not be null or empty");
         }
-
         try {
             return new String(data, charset);
         } catch (UnsupportedEncodingException e) {
-
             // if (LOG.isWarnEnabled()) {
             // LOG.warn("Unsupported encoding: " + charset +
             // ". System encoding used");
@@ -4130,16 +4130,15 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
     /**
      * Converts the specified string to byte array of ASCII characters.
      *
-     * @param data the string to be encoded
+     * @param data
+     * 		the string to be encoded
      * @return The string as a byte array.
      * @since 3.0
      */
     public static byte[] getAsciiBytes(final String data) {
-
         if (data == null) {
             throw new IllegalArgumentException("Parameter may not be null");
         }
-
         try {
             return data.getBytes("US-ASCII");
         } catch (UnsupportedEncodingException e) {
@@ -4151,15 +4150,16 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * Encodes an array of bytes into an array of URL safe 7-bit characters.
      * Unsafe characters are escaped.
      *
-     * @param urlsafe bitset of characters deemed URL safe
-     * @param bytes array of bytes to convert to URL safe characters
+     * @param urlsafe
+     * 		bitset of characters deemed URL safe
+     * @param bytes
+     * 		array of bytes to convert to URL safe characters
      * @return array of bytes containing URL safe characters
      */
     private static final byte[] encodeUrl(BitSet urlsafe, byte[] bytes) {
         if (bytes == null) {
             return null;
         }
-
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         for (int i = 0; i < bytes.length; i++) {
             int b = bytes[i];
@@ -4173,10 +4173,8 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
                 buffer.write(b);
             } else {
                 buffer.write('%');
-                char hex1 = Character.toUpperCase(Character.forDigit(
-                    (b >> 4) & 0xF, 16));
-                char hex2 = Character.toUpperCase(Character.forDigit(b & 0xF,
-                    16));
+                char hex1 = Character.toUpperCase(Character.forDigit((b >> 4) & 0xf, 16));
+                char hex2 = Character.toUpperCase(Character.forDigit(b & 0xf, 16));
                 buffer.write(hex1);
                 buffer.write(hex2);
             }
@@ -4189,9 +4187,11 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
      * bytes. Escaped characters are converted back to their original
      * representation.
      *
-     * @param bytes array of URL safe characters
+     * @param bytes
+     * 		array of URL safe characters
      * @return array of original bytes
-     * @throws URIException Thrown if URL decoding is unsuccessful
+     * @throws URIException
+     * 		Thrown if URL decoding is unsuccessful
      */
     private static final byte[] decodeUrl(byte[] bytes) {
         if (bytes == null) {
@@ -4204,12 +4204,12 @@ public class URI implements Cloneable, Comparable<URI>, Serializable {
                 buffer.write(' ');
             } else if (b == '%') {
                 try {
-                    int u = Character.digit((char) bytes[++i], 16);
-                    int l = Character.digit((char) bytes[++i], 16);
-                    if (u == -1 || l == -1) {
+                    int u = Character.digit(((char) (bytes[++i])), 16);
+                    int l = Character.digit(((char) (bytes[++i])), 16);
+                    if ((u == (-1)) || (l == (-1))) {
                         throw new URIException("Invalid URL encoding");
                     }
-                    buffer.write((char) ((u << 4) + l));
+                    buffer.write(((char) ((u << 4) + l)));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     throw new URIException("Invalid URL encoding");
                 }

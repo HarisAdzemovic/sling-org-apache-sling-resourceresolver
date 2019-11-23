@@ -1,23 +1,21 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
  */
 package org.apache.sling.resourceresolver.impl.console;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -31,14 +29,12 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.sling.api.request.ResponseUtil;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.mapping.ResourceMapper;
@@ -57,9 +53,21 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
-
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.sling.api.request.ResponseUtil;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.mapping.ResourceMapper;
+import org.apache.sling.api.resource.runtime.RuntimeService;
+import org.apache.sling.api.resource.runtime.dto.ResourceProviderDTO;
+import org.apache.sling.api.resource.runtime.dto.ResourceProviderFailureDTO;
+import org.apache.sling.api.resource.runtime.dto.RuntimeDTO;
+import org.apache.sling.spi.resource.provider.ResourceProvider;
 public class ResourceResolverWebConsolePlugin extends HttpServlet {
-
     private static final long serialVersionUID = 0;
 
     private static final String ATTR_TEST = "plugin.test";
@@ -67,6 +75,7 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
     private static final String ATTR_SUBMIT = "plugin.submit";
 
     private static final String PAR_MSG = "msg";
+
     private static final String PAR_TEST = "test";
 
     private final transient CommonResourceResolverFactoryImpl resolverFactory;
@@ -77,16 +86,12 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
 
     private final transient BundleContext bundleContext;
 
-    public ResourceResolverWebConsolePlugin(final BundleContext context,
-            final CommonResourceResolverFactoryImpl resolverFactory,
-            final RuntimeService runtimeService) {
+    public ResourceResolverWebConsolePlugin(final BundleContext context, final CommonResourceResolverFactoryImpl resolverFactory, final RuntimeService runtimeService) {
         this.resolverFactory = resolverFactory;
         this.runtimeService = runtimeService;
         this.bundleContext = context;
-
         Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put(Constants.SERVICE_DESCRIPTION,
-                "Apache Sling Resource Resolver Web Console Plugin");
+        props.put(Constants.SERVICE_DESCRIPTION, "Apache Sling Resource Resolver Web Console Plugin");
         props.put(Constants.SERVICE_VENDOR, "The Apache Software Foundation");
         props.put(Constants.SERVICE_PID, getClass().getName());
         props.put("felix.webconsole.label", "jcrresolver");
@@ -94,7 +99,6 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
         props.put("felix.webconsole.css", "/jcrresolver/res/ui/resourceresolver.css");
         props.put("felix.webconsole.category", "Sling");
         props.put("felix.webconsole.configprinter.modes", "always");
-
         service = context.registerService(Servlet.class, this, props);
     }
 
@@ -106,9 +110,7 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
     }
 
     @Override
-    protected void doGet(final HttpServletRequest request,
-            final HttpServletResponse response) throws ServletException,
-    IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         final String msg = request.getParameter(PAR_MSG);
         final String test;
         if (msg != null) {
@@ -116,13 +118,9 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
         } else {
             test = null;
         }
-
         final PrintWriter pw = response.getWriter();
-
         pw.println("<table class='content' cellpadding='0' cellspacing='0' width='100%'>");
-
         final MapEntriesHandler mapEntries = resolverFactory.getMapEntries();
-
         titleHtml(pw, "Configuration", null);
         pw.println("<tr class='content'>");
         pw.println("<td class='content'>Resource Search Path</td>");
@@ -133,8 +131,7 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
         pw.println("<tr class='content'>");
         pw.println("<td class='content'>Namespace Mangling</td>");
         pw.print("<td class='content' colspan='2'>");
-        pw.print(resolverFactory.isMangleNamespacePrefixes() ? "Enabled"
-                : "Disabled");
+        pw.print(resolverFactory.isMangleNamespacePrefixes() ? "Enabled" : "Disabled");
         pw.print("</td>");
         pw.println("</tr>");
         pw.println("<tr class='content'>");
@@ -143,39 +140,22 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
         pw.print(resolverFactory.getMapRoot());
         pw.print("</td>");
         pw.println("</tr>");
-
         separatorHtml(pw);
-
-        titleHtml(
-                pw,
-                "Configuration Test",
-                "To test the configuration, enter an URL or a resource path into "
-                        + "the field and click 'Resolve' to resolve the URL or click 'Map' "
-                        + "to map the resource path. To simulate a map call that takes the "
-                        + "current request into account, provide a full URL whose "
-                        + "scheme/host/port prefix will then be used as the request "
-                        + "information. The path passed to map will always be the path part "
-                        + "of the URL. In case multiple mapping candidates are found, the "
-                        + "primary one, which would be returned by ResourceResolver.map, is "
-                        + "clearly marked, and the others listed for completeness.");
-
+        titleHtml(pw, "Configuration Test", "To test the configuration, enter an URL or a resource path into " + ((((((("the field and click 'Resolve' to resolve the URL or click 'Map' " + "to map the resource path. To simulate a map call that takes the ") + "current request into account, provide a full URL whose ") + "scheme/host/port prefix will then be used as the request ") + "information. The path passed to map will always be the path part ") + "of the URL. In case multiple mapping candidates are found, the ") + "primary one, which would be returned by ResourceResolver.map, is ") + "clearly marked, and the others listed for completeness."));
         pw.println("<tr class='content'>");
         pw.println("<td class='content'>Test</td>");
         pw.print("<td class='content' colspan='2'>");
         pw.print("<form method='post'>");
-        pw.print("<input type='text' name='" + ATTR_TEST + "' value='");
+        pw.print(("<input type='text' name='" + ATTR_TEST) + "' value='");
         if (test != null) {
             pw.print(ResponseUtil.escapeXml(test));
         }
         pw.println("' class='input' size='50'>");
-        pw.println("&nbsp;&nbsp;<input type='submit' name='" + ATTR_SUBMIT
-                + "' value='Resolve' class='submit'>");
-        pw.println("&nbsp;&nbsp;<input type='submit' name='" + ATTR_SUBMIT
-                + "' value='Map' class='submit'>");
+        pw.println(("&nbsp;&nbsp;<input type='submit' name='" + ATTR_SUBMIT) + "' value='Resolve' class='submit'>");
+        pw.println(("&nbsp;&nbsp;<input type='submit' name='" + ATTR_SUBMIT) + "' value='Map' class='submit'>");
         pw.print("</form>");
         pw.print("</td>");
         pw.println("</tr>");
-
         if (msg != null) {
             pw.println("<tr class='content'>");
             pw.println("<td class='content'>&nbsp;</td>");
@@ -184,45 +164,25 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
             pw.println("</td>");
             pw.println("</tr>");
         }
-
         separatorHtml(pw);
-        dumpMapHtml(
-                pw,
-                "Resolver Map Entries",
-                "Lists the entries used by the ResourceResolver.resolve methods to map URLs to Resources",
-                mapEntries.getResolveMaps());
-
+        dumpMapHtml(pw, "Resolver Map Entries", "Lists the entries used by the ResourceResolver.resolve methods to map URLs to Resources", mapEntries.getResolveMaps());
         separatorHtml(pw);
-
-        dumpMapHtml(
-                pw,
-                "Mapping Map Entries",
-                "Lists the entries used by the ResourceResolver.map methods to map Resource Paths to URLs",
-                mapEntries.getMapMaps());
-
+        dumpMapHtml(pw, "Mapping Map Entries", "Lists the entries used by the ResourceResolver.map methods to map Resource Paths to URLs", mapEntries.getMapMaps());
         separatorHtml(pw);
-
         dumpDTOsHtml(pw);
-
         pw.println("</table>");
-
     }
 
     @Override
-    protected void doPost(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         final String test = request.getParameter(ATTR_TEST);
         String msg = null;
-        if (test != null && test.length() > 0) {
-
+        if ((test != null) && (test.length() > 0)) {
             ResourceResolver resolver = null;
             try {
                 // prepare the request for the resource resolver
                 HttpServletRequest helper = new ResolverRequest(request, test);
-
                 resolver = resolverFactory.getServiceResourceResolver(this.resolverFactory.getServiceUserAuthenticationInfo("console"));
-
                 // map or resolve as instructed
                 Object result;
                 if ("Map".equals(request.getParameter(ATTR_SUBMIT))) {
@@ -235,57 +195,49 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
                 } else {
                     result = resolver.resolve(helper, helper.getPathInfo());
                 }
-
                 // set the result to render the result
                 msg = result.toString();
-
             } catch (final Throwable t) {
-
                 // some error occurred, report it as a result
                 msg = "Test Failure: " + t;
-
             } finally {
                 if (resolver != null) {
                     resolver.close();
                 }
             }
-
         }
-
         // finally redirect
-        final String path = request.getContextPath() + request.getServletPath()
-        + request.getPathInfo();
+        final String path = (request.getContextPath() + request.getServletPath()) + request.getPathInfo();
         final String redirectTo;
         if (msg == null) {
             redirectTo = path;
         } else {
-            redirectTo = path + '?' + PAR_MSG + '=' + encodeParam(msg) + '&'
-                    + PAR_TEST + '=' + encodeParam(test);
+            redirectTo = (((((((path + '?') + PAR_MSG) + '=') + encodeParam(msg)) + '&') + PAR_TEST) + '=') + encodeParam(test);
         }
         response.sendRedirect(redirectTo);
     }
 
     private static String mappingsToString(Collection<String> allMappings) {
-        if ( allMappings.size() == 0 )
-            return ""; // should not happen
-        if ( allMappings.size() == 1)
+        if (allMappings.size() == 0)
+            return "";
+
+        // should not happen
+        if (allMappings.size() == 1)
             return allMappings.iterator().next();
 
         StringBuilder out = new StringBuilder();
-        for ( Iterator<String> it = allMappings.iterator(); it.hasNext(); ) {
-            if ( out.length() == 0 ) {
+        for (Iterator<String> it = allMappings.iterator(); it.hasNext();) {
+            if (out.length() == 0) {
                 out.append("Primary: ").append(it.next());
-                if ( it.hasNext() )
+                if (it.hasNext())
                     out.append(". Other candidates:");
-            }
-            else
+
+            } else
                 out.append(' ').append(it.next()).append(',');
+
         }
-
         out.setCharAt(out.length() - 1, '.');
-
         return out.toString();
-
     }
 
     private String encodeParam(final String value) {
@@ -298,36 +250,24 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
     }
 
     // ---------- ConfigurationPrinter
-
     public void printConfiguration(final PrintWriter pw) {
         dumpDTOsText(pw);
-
         separatorText(pw);
-
         final MapEntriesHandler mapEntries = resolverFactory.getMapEntries();
-
         dumpMapText(pw, "Resolver Map Entries", mapEntries.getResolveMaps());
-
         separatorText(pw);
-
         dumpMapText(pw, "Mapping Map Entries", mapEntries.getMapMaps());
     }
 
     // ---------- internal
-
-    private void dumpMapHtml(PrintWriter pw, String title, String description,
-            Collection<MapEntry> list) {
-
+    private void dumpMapHtml(PrintWriter pw, String title, String description, Collection<MapEntry> list) {
         titleHtml(pw, title, description);
-
         pw.println("<tr class='content'>");
         pw.println("<th class='content'>Pattern</th>");
         pw.println("<th class='content'>Replacement</th>");
         pw.println("<th class='content'>Redirect</th>");
         pw.println("</tr>");
-
         final Set<String> usedPatterns = new HashSet<String>();
-
         for (final MapEntry entry : list) {
             final String pattern = entry.getPattern();
             pw.print("<tr class='content");
@@ -338,7 +278,6 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
             pw.println("<td class='content' style='vertical-align: top'>");
             pw.print(ResponseUtil.escapeXml(pattern));
             pw.print("</td>");
-
             pw.print("<td class='content' style='vertical-align: top'>");
             final String[] repls = entry.getRedirect();
             for (final String repl : repls) {
@@ -346,7 +285,6 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
                 pw.print("<br/>");
             }
             pw.print("</td>");
-
             pw.print("<td class='content' style='vertical-align: top'>");
             if (entry.isInternal()) {
                 pw.print("internal");
@@ -355,7 +293,6 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
                 pw.print(String.valueOf(entry.getStatus()));
             }
             pw.println("</td></tr>");
-
         }
     }
 
@@ -364,7 +301,6 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
         pw.print("<th colspan='3'class='content container'>");
         pw.print(ResponseUtil.escapeXml(title));
         pw.println("</th></tr>");
-
         if (description != null) {
             pw.print("<tr class='content'>");
             pw.print("<td colspan='3'class='content'>");
@@ -379,58 +315,49 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
         pw.println("</tr>");
     }
 
-    private void dumpMapText(PrintWriter pw, String title,
-            Collection<MapEntry> list) {
-
+    private void dumpMapText(PrintWriter pw, String title, Collection<MapEntry> list) {
         pw.println(title);
-
         final String format = "%25s%25s%15s\r\n";
         pw.printf(format, "Pattern", "Replacement", "Redirect");
-
         for (MapEntry entry : list) {
             final List<String> redir = Arrays.asList(entry.getRedirect());
-            final String status = entry.isInternal() ? "internal"
-                    : "external: " + entry.getStatus();
+            final String status = (entry.isInternal()) ? "internal" : "external: " + entry.getStatus();
             pw.printf(format, entry.getPattern(), redir, status);
         }
     }
 
     private ServiceReference<ResourceProvider<?>> getServiceReference(final long id) {
         try {
-            final Collection<ServiceReference<ResourceProvider>> refs = this.bundleContext.getServiceReferences(ResourceProvider.class,
-                    "(" + Constants.SERVICE_ID + "=" + String.valueOf(id) + ")");
-            if ( refs != null && !refs.isEmpty() ) {
+            final Collection<ServiceReference<ResourceProvider>> refs = this.bundleContext.getServiceReferences(ResourceProvider.class, ((("(" + Constants.SERVICE_ID) + "=") + String.valueOf(id)) + ")");
+            if ((refs != null) && (!refs.isEmpty())) {
                 final ServiceReference rp = refs.iterator().next();
                 return rp;
             }
-        } catch ( final InvalidSyntaxException ise) {
+        } catch (final InvalidSyntaxException ise) {
             // ignore
         }
         return null;
     }
 
     private void dumpDTOsHtml(final PrintWriter pw) {
-
         titleHtml(pw, "Resource Providers", "Lists all available and activate resource prodivers.");
-
         pw.println("<tr class='content'>");
         pw.println("<th class='content'>Provider</th>");
         pw.println("<th class='content'>Path</th>");
         pw.println("<th class='content'>Configuration</th>");
         pw.println("</tr>");
-
         final RuntimeDTO runtimeDTO = this.runtimeService.getRuntimeDTO();
-        for(final ResourceProviderDTO dto : runtimeDTO.providers) {
+        for (final ResourceProviderDTO dto : runtimeDTO.providers) {
             // get service reference
             final ServiceReference<ResourceProvider<?>> ref = this.getServiceReference(dto.serviceId);
             final StringBuilder sb = new StringBuilder();
-            if ( dto.name != null ) {
+            if (dto.name != null) {
                 sb.append(dto.name);
                 sb.append(' ');
             } else {
                 sb.append("<unnamed> ");
             }
-            if ( ref != null ) {
+            if (ref != null) {
                 sb.append("(serviceId = ");
                 sb.append(dto.serviceId);
                 sb.append(", bundleId = ");
@@ -441,11 +368,9 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
             pw.print("<td class='content' style='vertical-align: top'>");
             pw.print(ResponseUtil.escapeXml(sb.toString()));
             pw.print("</td>");
-
             pw.print("<td class='content' style='vertical-align: top'>");
             pw.print(ResponseUtil.escapeXml(dto.path));
             pw.print("</td>");
-
             pw.print("<td class='content' style='vertical-align: top'>");
             pw.print("auth=");
             pw.print(dto.authType.name());
@@ -469,27 +394,24 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
             pw.print(dto.useResourceAccessSecurity);
             pw.println("</td></tr>");
         }
-
-        if ( runtimeDTO.failedProviders.length > 0 ) {
+        if (runtimeDTO.failedProviders.length > 0) {
             titleHtml(pw, "Failed Resource Providers", "Lists all failed providers.");
-
             pw.println("<tr class='content'>");
             pw.println("<th class='content'>Provider</th>");
             pw.println("<th class='content'>Path</th>");
             pw.println("<th class='content'>Reason</th>");
             pw.println("</tr>");
-
-            for(final ResourceProviderFailureDTO dto : runtimeDTO.failedProviders) {
+            for (final ResourceProviderFailureDTO dto : runtimeDTO.failedProviders) {
                 // get service reference
                 final ServiceReference<ResourceProvider<?>> ref = this.getServiceReference(dto.serviceId);
                 final StringBuilder sb = new StringBuilder();
-                if ( dto.name != null ) {
+                if (dto.name != null) {
                     sb.append(dto.name);
                     sb.append(' ');
                 } else {
                     sb.append("<unnamed> ");
                 }
-                if ( ref != null ) {
+                if (ref != null) {
                     sb.append("(serviceId = ");
                     sb.append(dto.serviceId);
                     sb.append(", bundleId = ");
@@ -500,11 +422,9 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
                 pw.print("<td class='content' style='vertical-align: top'>");
                 pw.print(ResponseUtil.escapeXml(sb.toString()));
                 pw.print("</td>");
-
                 pw.print("<td class='content' style='vertical-align: top'>");
                 pw.print(ResponseUtil.escapeXml(dto.path));
                 pw.print("</td>");
-
                 pw.print("<td class='content' style='vertical-align: top'>");
                 pw.print(dto.reason.name());
                 pw.println("</td></tr>");
@@ -513,24 +433,21 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
     }
 
     private void dumpDTOsText(final PrintWriter pw) {
-
         pw.println("Resource Providers");
-
         final String format = "%35s %25s %15s\r\n";
         pw.printf(format, "Provider", "Path", "Configuration");
-
         final RuntimeDTO runtimeDTO = this.runtimeService.getRuntimeDTO();
-        for(final ResourceProviderDTO dto : runtimeDTO.providers) {
+        for (final ResourceProviderDTO dto : runtimeDTO.providers) {
             // get service reference
             final ServiceReference<ResourceProvider<?>> ref = this.getServiceReference(dto.serviceId);
             final StringBuilder sb = new StringBuilder();
-            if ( dto.name != null ) {
+            if (dto.name != null) {
                 sb.append(dto.name);
                 sb.append(' ');
             } else {
                 sb.append("<unnamed> ");
             }
-            if ( ref != null ) {
+            if (ref != null) {
                 sb.append("(serviceId = ");
                 sb.append(dto.serviceId);
                 sb.append(", bundleId = ");
@@ -555,21 +472,20 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
             pw.printf(format, sb.toString(), dto.path, config.toString());
         }
         pw.println();
-        if ( runtimeDTO.failedProviders.length > 0 ) {
+        if (runtimeDTO.failedProviders.length > 0) {
             pw.println("Failed Resource Providers");
             pw.printf(format, "Provider", "Path", "Reason");
-
-            for(final ResourceProviderFailureDTO dto : runtimeDTO.failedProviders) {
+            for (final ResourceProviderFailureDTO dto : runtimeDTO.failedProviders) {
                 // get service reference
                 final ServiceReference<ResourceProvider<?>> ref = this.getServiceReference(dto.serviceId);
                 final StringBuilder sb = new StringBuilder();
-                if ( dto.name != null ) {
+                if (dto.name != null) {
                     sb.append(dto.name);
                     sb.append(' ');
                 } else {
                     sb.append("<unnamed> ");
                 }
-                if ( ref != null ) {
+                if (ref != null) {
                     sb.append("(serviceId = ");
                     sb.append(dto.serviceId);
                     sb.append(", bundleId = ");
@@ -598,11 +514,9 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
     }
 
     private static class ResolverRequest extends HttpServletRequestWrapper {
-
         private final URI uri;
 
-        public ResolverRequest(HttpServletRequest request, String uriString)
-                throws URIException {
+        public ResolverRequest(HttpServletRequest request, String uriString) throws URIException {
             super(request);
             uri = new URI(uriString, false);
         }
@@ -635,5 +549,4 @@ public class ResourceResolverWebConsolePlugin extends HttpServlet {
             }
         }
     }
-
 }

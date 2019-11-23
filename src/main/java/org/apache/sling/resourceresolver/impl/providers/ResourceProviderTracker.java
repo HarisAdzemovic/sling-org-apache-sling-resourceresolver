@@ -1,23 +1,22 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
  */
 package org.apache.sling.resourceresolver.impl.providers;
-
+import SlingConstants.PROPERTY_PATH;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Dictionary;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.sling.api.SlingConstants;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
@@ -52,21 +50,36 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import FailureReason.invalid;
+import FailureReason.service_not_gettable;
+import SlingConstants.PROPERTY_PATH;
+import org.apache.sling.api.SlingConstants;
+import org.apache.sling.api.resource.observation.ResourceChange;
+import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
+import org.apache.sling.api.resource.path.Path;
+import org.apache.sling.api.resource.path.PathSet;
+import org.apache.sling.api.resource.runtime.dto.AuthType;
+import org.apache.sling.api.resource.runtime.dto.FailureReason;
+import org.apache.sling.api.resource.runtime.dto.ResourceProviderDTO;
+import org.apache.sling.api.resource.runtime.dto.ResourceProviderFailureDTO;
+import org.apache.sling.api.resource.runtime.dto.RuntimeDTO;
+import org.apache.sling.spi.resource.provider.ObservationReporter;
+import org.apache.sling.spi.resource.provider.ResourceProvider;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * This service keeps track of all resource providers.
  */
 public class ResourceProviderTracker implements ResourceProviderStorageProvider {
-
     public interface ObservationReporterGenerator {
-
         ObservationReporter create(final Path path, final PathSet excludes);
 
         ObservationReporter createProviderReporter();
     }
 
     public interface ChangeListener {
-
         void providerAdded();
 
         void providerRemoved(String name, String pid, boolean stateful, boolean used);
@@ -101,19 +114,16 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
         this.bundleContext = bundleContext;
         this.eventAdmin = eventAdmin;
         this.listener = listener;
-        this.tracker = new ServiceTracker<>(bundleContext,
-                ResourceProvider.class,
-                new ServiceTrackerCustomizer<ResourceProvider, ServiceReference<ResourceProvider>>() {
-
+        this.tracker = new ServiceTracker(bundleContext, ResourceProvider.class, new ServiceTrackerCustomizer<ResourceProvider, ServiceReference<ResourceProvider>>() {
             @Override
             public void removedService(final ServiceReference<ResourceProvider> reference, final ServiceReference<ResourceProvider> ref) {
                 final ResourceProviderInfo info = infos.remove(ref);
-                if ( info != null ) {
+                if (info != null) {
                     Object pid = ref.getProperty(Constants.SERVICE_PID);
-                    if ( pid != null && !(pid instanceof String) ) {
+                    if ((pid != null) && (!(pid instanceof String))) {
                         pid = null;
                     }
-                    unregister(info, (String)pid);
+                    unregister(info, ((String) (pid)));
                 }
             }
 
@@ -138,7 +148,7 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
         this.listener = null;
         this.eventAdmin = null;
         this.providerReporter = null;
-        if ( this.tracker != null ) {
+        if (this.tracker != null) {
             this.tracker.close();
             this.tracker = null;
         }
@@ -149,10 +159,10 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
 
     public void setObservationReporterGenerator(final ObservationReporterGenerator generator) {
         this.providerReporter = generator.createProviderReporter();
-        synchronized ( this.handlers ) {
+        synchronized(this.handlers) {
             this.reporterGenerator = generator;
             for (List<ResourceProviderHandler> list : handlers.values()) {
-                if ( !list.isEmpty() ) {
+                if (!list.isEmpty()) {
                     final ResourceProviderHandler h = list.get(0);
                     if (h != null) {
                         updateProviderContext(h);
@@ -165,108 +175,106 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
 
     /**
      * Try to register a new resource provider.
-     * @param info The resource provider info.
+     *
+     * @param info
+     * 		The resource provider info.
      */
     private void register(final ResourceProviderInfo info) {
-        if ( info.isValid() ) {
-           logger.debug("Registering new resource provider {}", info);
-           final List<ProviderEvent> events = new ArrayList<>();
-           boolean providerAdded = false;
-           ResourceProviderHandler deactivateHandler = null;
-
-           ResourceProviderHandler activate = null;
-           synchronized ( this.handlers ) {
-               List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
-               if ( matchingHandlers == null ) {
-                   matchingHandlers = new ArrayList<>();
-                   this.handlers.put(info.getPath(), matchingHandlers);
-               }
-               final ResourceProviderHandler handler = new ResourceProviderHandler(bundleContext, info);
-               matchingHandlers.add(handler);
-               Collections.sort(matchingHandlers);
-               if ( matchingHandlers.get(0) == handler ) {
-                   activate = handler;
-               }
-           }
-           if ( activate != null ) {
-               if ( this.activate(activate) ) {
-                   providerAdded = true;
-                   events.add(new ProviderEvent(true, info));
-                   synchronized ( this.handlers ) {
-                       storage = null;
-                       final List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
-                       if ( matchingHandlers != null && matchingHandlers.size() > 1  ) {
-                           deactivateHandler = matchingHandlers.get(1);
-                       }
-                   }
-               } else {
-                   synchronized ( this.handlers ) {
-                       final List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
-                       if ( matchingHandlers != null && !matchingHandlers.isEmpty() && matchingHandlers.remove(activate) ) {
-                           storage = null;
-                           if ( matchingHandlers.isEmpty() ) {
-                               this.handlers.remove(info.getPath());
-                           }
-                       }
-                   }
-               }
-           }
-
-           final ChangeListener cl = this.listener;
-           if ( providerAdded && cl != null ) {
-               cl.providerAdded();
-           }
-           // we have to check for deactivated handlers
-           if ( deactivateHandler != null ) {
-               final ResourceProviderInfo handlerInfo = deactivateHandler.getInfo();
-               if ( cl != null ) {
-                   Object pid = handlerInfo.getServiceReference().getProperty(Constants.SERVICE_PID);
-                   if ( pid != null && !(pid instanceof String) ) {
-                       pid = null;
-                   }
-                   cl.providerRemoved(handlerInfo.getName(), (String)pid,
-                               handlerInfo.getAuthType() != AuthType.no,
-                                       deactivateHandler.isUsed());
-               }
-               this.deactivate(deactivateHandler);
-               synchronized ( this.handlers ) {
-                   storage = null;
-               }
-               events.add(new ProviderEvent(false, handlerInfo));
-           }
-           this.postEvents(events);
+        if (info.isValid()) {
+            logger.debug("Registering new resource provider {}", info);
+            final List<ProviderEvent> events = new ArrayList<>();
+            boolean providerAdded = false;
+            ResourceProviderHandler deactivateHandler = null;
+            ResourceProviderHandler activate = null;
+            synchronized(this.handlers) {
+                List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
+                if (matchingHandlers == null) {
+                    matchingHandlers = new ArrayList<>();
+                    this.handlers.put(info.getPath(), matchingHandlers);
+                }
+                final ResourceProviderHandler handler = new ResourceProviderHandler(bundleContext, info);
+                matchingHandlers.add(handler);
+                Collections.sort(matchingHandlers);
+                if (matchingHandlers.get(0) == handler) {
+                    activate = handler;
+                }
+            }
+            if (activate != null) {
+                if (this.activate(activate)) {
+                    providerAdded = true;
+                    events.add(new ProviderEvent(true, info));
+                    synchronized(this.handlers) {
+                        storage = null;
+                        final List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
+                        if ((matchingHandlers != null) && (matchingHandlers.size() > 1)) {
+                            deactivateHandler = matchingHandlers.get(1);
+                        }
+                    }
+                } else {
+                    synchronized(this.handlers) {
+                        final List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
+                        if (((matchingHandlers != null) && (!matchingHandlers.isEmpty())) && matchingHandlers.remove(activate)) {
+                            storage = null;
+                            if (matchingHandlers.isEmpty()) {
+                                this.handlers.remove(info.getPath());
+                            }
+                        }
+                    }
+                }
+            }
+            final ChangeListener cl = this.listener;
+            if (providerAdded && (cl != null)) {
+                cl.providerAdded();
+            }
+            // we have to check for deactivated handlers
+            if (deactivateHandler != null) {
+                final ResourceProviderInfo handlerInfo = deactivateHandler.getInfo();
+                if (cl != null) {
+                    Object pid = handlerInfo.getServiceReference().getProperty(Constants.SERVICE_PID);
+                    if ((pid != null) && (!(pid instanceof String))) {
+                        pid = null;
+                    }
+                    cl.providerRemoved(handlerInfo.getName(), ((String) (pid)), handlerInfo.getAuthType() != AuthType.no, deactivateHandler.isUsed());
+                }
+                this.deactivate(deactivateHandler);
+                synchronized(this.handlers) {
+                    storage = null;
+                }
+                events.add(new ProviderEvent(false, handlerInfo));
+            }
+            this.postEvents(events);
         } else {
             logger.warn("Ignoring invalid resource provider {}", info);
-            this.invalidProviders.put(info, FailureReason.invalid);
+            this.invalidProviders.put(info, invalid);
         }
     }
 
     /**
      * Unregister a resource provider.
-     * @param info The resource provider info.
+     *
+     * @param info
+     * 		The resource provider info.
      */
     private void unregister(final ResourceProviderInfo info, final String pid) {
         final boolean isInvalid;
-        synchronized ( this.invalidProviders ) {
+        synchronized(this.invalidProviders) {
             isInvalid = this.invalidProviders.remove(info) != null;
         }
-
-        if ( !isInvalid ) {
+        if (!isInvalid) {
             logger.debug("Unregistering resource provider {}", info);
-
             // remove provider from handlers and if the provider is active (first handler)
             // keep the reference for deactivation
             ResourceProviderHandler deactivateHandler = null;
-            synchronized (this.handlers) {
+            synchronized(this.handlers) {
                 final List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
-                if ( matchingHandlers != null ) {
+                if (matchingHandlers != null) {
                     final Iterator<ResourceProviderHandler> it = matchingHandlers.iterator();
                     boolean first = true;
                     while (it.hasNext()) {
                         final ResourceProviderHandler h = it.next();
                         if (h.getInfo() == info) {
                             it.remove();
-                            if ( first ) {
+                            if (first) {
                                 deactivateHandler = h;
                             } else {
                                 h.dispose();
@@ -275,31 +283,26 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
                                 this.handlers.remove(info.getPath());
                             }
                             storage = null;
-
                             break;
                         }
                         first = false;
-                    }
+                    } 
                 }
             }
-
-            if ( deactivateHandler != null ) {
+            if (deactivateHandler != null) {
                 final List<ProviderEvent> events = new ArrayList<>();
                 final ChangeListener cl = this.listener;
-                if ( cl != null ) {
-                    cl.providerRemoved(info.getName(), pid,
-                            info.getAuthType() != AuthType.no,
-                                    deactivateHandler.isUsed());
+                if (cl != null) {
+                    cl.providerRemoved(info.getName(), pid, info.getAuthType() != AuthType.no, deactivateHandler.isUsed());
                 }
                 this.deactivate(deactivateHandler);
                 deactivateHandler.dispose();
-
                 // check if we can activate another handler
                 ResourceProviderHandler addingProvider = null;
-                synchronized ( this.handlers ) {
+                synchronized(this.handlers) {
                     final List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
-                    if ( matchingHandlers != null ) {
-                        if ( matchingHandlers.isEmpty() ) {
+                    if (matchingHandlers != null) {
+                        if (matchingHandlers.isEmpty()) {
                             this.handlers.remove(info.getPath());
                         } else {
                             addingProvider = matchingHandlers.get(0);
@@ -307,23 +310,23 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
                     }
                 }
                 boolean providerAdded = false;
-                while ( addingProvider != null ) {
+                while (addingProvider != null) {
                     if (this.activate(addingProvider)) {
                         events.add(new ProviderEvent(true, addingProvider.getInfo()));
                         providerAdded = true;
                         addingProvider = null;
-                        synchronized ( this.handlers ) {
+                        synchronized(this.handlers) {
                             this.storage = null;
                         }
                     } else {
-                        synchronized ( this.handlers ) {
+                        synchronized(this.handlers) {
                             final List<ResourceProviderHandler> matchingHandlers = this.handlers.get(info.getPath());
-                            if ( matchingHandlers != null && !matchingHandlers.isEmpty() ) {
-                                if ( matchingHandlers.get(0) == addingProvider ) {
+                            if ((matchingHandlers != null) && (!matchingHandlers.isEmpty())) {
+                                if (matchingHandlers.get(0) == addingProvider) {
                                     this.storage = null;
                                     matchingHandlers.remove(0);
                                     addingProvider.dispose();
-                                    if ( matchingHandlers.isEmpty() ) {
+                                    if (matchingHandlers.isEmpty()) {
                                         this.handlers.remove(info.getPath());
                                         addingProvider = null;
                                     } else {
@@ -333,16 +336,14 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
                             }
                         }
                     }
-                }
-
-                if ( providerAdded && cl != null ) {
-                    if ( cl != null ) {
+                } 
+                if (providerAdded && (cl != null)) {
+                    if (cl != null) {
                         cl.providerAdded();
                     }
                 }
-                events.add(new ProviderEvent(false,info));
+                events.add(new ProviderEvent(false, info));
                 this.postEvents(events);
-
             }
         } else {
             logger.debug("Unregistering invalid resource provider {}", info);
@@ -351,16 +352,17 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
 
     /**
      * Activate a resource provider
-     * @param handler The provider handler
+     *
+     * @param handler
+     * 		The provider handler
      */
     private boolean activate(final ResourceProviderHandler handler) {
-        synchronized (this.handlers) {
+        synchronized(this.handlers) {
             updateProviderContext(handler);
         }
-        if ( !handler.activate() ) {
+        if (!handler.activate()) {
             logger.warn("Activating resource provider {} failed", handler.getInfo());
-            this.invalidProviders.put(handler.getInfo(), FailureReason.service_not_gettable);
-
+            this.invalidProviders.put(handler.getInfo(), service_not_gettable);
             return false;
         }
         logger.debug("Activated resource provider {}", handler.getInfo());
@@ -369,7 +371,9 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
 
     /**
      * Deactivate a resource provider
-     * @param handler The provider handler
+     *
+     * @param handler
+     * 		The provider handler
      */
     private void deactivate(final ResourceProviderHandler handler) {
         handler.deactivate();
@@ -378,31 +382,34 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
 
     /**
      * Post a change event through the event admin
+     *
      * @param event
+     * 		
      */
     private void postOSGiEvent(final ProviderEvent event) {
         final EventAdmin ea = this.eventAdmin;
-        if ( ea != null ) {
+        if (ea != null) {
             final Dictionary<String, Object> eventProps = new Hashtable<>();
-            eventProps.put(SlingConstants.PROPERTY_PATH, event.path);
+            eventProps.put(PROPERTY_PATH, event.path);
             if (event.pid != null) {
                 eventProps.put(Constants.SERVICE_PID, event.pid);
             }
-            ea.postEvent(new Event(event.isAdd ? SlingConstants.TOPIC_RESOURCE_PROVIDER_ADDED : SlingConstants.TOPIC_RESOURCE_PROVIDER_REMOVED,
-                    eventProps));
+            ea.postEvent(new Event(event.isAdd ? SlingConstants.TOPIC_RESOURCE_PROVIDER_ADDED : SlingConstants.TOPIC_RESOURCE_PROVIDER_REMOVED, eventProps));
         }
     }
 
     /**
      * Post a change event for a resource provider change
-     * @param type The change type
-     * @param info The resource provider
+     *
+     * @param type
+     * 		The change type
+     * @param info
+     * 		The resource provider
      */
     private void postResourceProviderChange(final ProviderEvent event) {
         final ObservationReporter or = this.providerReporter;
-        if ( or != null ) {
-            final ResourceChange change = new ResourceChange(event.isAdd ? ChangeType.PROVIDER_ADDED : ChangeType.PROVIDER_REMOVED,
-                    event.path, false);
+        if (or != null) {
+            final ResourceChange change = new ResourceChange(event.isAdd ? ChangeType.PROVIDER_ADDED : ChangeType.PROVIDER_REMOVED, event.path, false);
             or.reportChanges(Collections.singletonList(change), false);
         }
     }
@@ -410,27 +417,26 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
     public void fill(final RuntimeDTO dto) {
         final List<ResourceProviderDTO> dtos = new ArrayList<>();
         final List<ResourceProviderFailureDTO> failures = new ArrayList<>();
-
-        synchronized ( this.handlers ) {
-            for(final List<ResourceProviderHandler> handlers : this.handlers.values()) {
+        synchronized(this.handlers) {
+            for (final List<ResourceProviderHandler> handlers : this.handlers.values()) {
                 boolean isFirst = true;
-                for(final ResourceProviderHandler h : handlers) {
+                for (final ResourceProviderHandler h : handlers) {
                     final ResourceProviderDTO d;
-                    if ( isFirst ) {
+                    if (isFirst) {
                         d = new ResourceProviderDTO();
                         dtos.add(d);
                         isFirst = false;
                     } else {
                         d = new ResourceProviderFailureDTO();
-                        ((ResourceProviderFailureDTO)d).reason = FailureReason.shadowed;
-                        failures.add((ResourceProviderFailureDTO)d);
+                        ((ResourceProviderFailureDTO) (d)).reason = FailureReason.shadowed;
+                        failures.add(((ResourceProviderFailureDTO) (d)));
                     }
                     fill(d, h);
                 }
             }
         }
-        synchronized ( this.invalidProviders ) {
-            for(final Map.Entry<ResourceProviderInfo, FailureReason> entry : this.invalidProviders.entrySet()) {
+        synchronized(this.invalidProviders) {
+            for (final Map.Entry<ResourceProviderInfo, FailureReason> entry : this.invalidProviders.entrySet()) {
                 final ResourceProviderFailureDTO d = new ResourceProviderFailureDTO();
                 fill(d, entry.getKey());
                 d.reason = entry.getValue();
@@ -445,13 +451,13 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
     public ResourceProviderStorage getResourceProviderStorage() {
         ResourceProviderStorage result = storage;
         if (result == null) {
-            synchronized (this.handlers) {
+            synchronized(this.handlers) {
                 if (storage == null) {
                     final List<ResourceProviderHandler> handlerList = new ArrayList<>();
                     for (List<ResourceProviderHandler> list : handlers.values()) {
-                        if ( !list.isEmpty() ) {
+                        if (!list.isEmpty()) {
                             final ResourceProviderHandler h = list.get(0);
-                            if (h != null && h.getResourceProvider() != null ) {
+                            if ((h != null) && (h.getResourceProvider() != null)) {
                                 handlerList.add(h);
                             }
                         }
@@ -472,7 +478,7 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
         d.name = info.getName();
         d.path = info.getPath();
         d.refreshable = info.isRefreshable();
-        d.serviceId = (Long)info.getServiceReference().getProperty(Constants.SERVICE_ID);
+        d.serviceId = ((Long) (info.getServiceReference().getProperty(Constants.SERVICE_ID)));
         d.supportsQueryLanguage = false;
         d.useResourceAccessSecurity = info.getUseResourceAccessSecurity();
     }
@@ -480,7 +486,7 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
     private void fill(final ResourceProviderDTO d, final ResourceProviderHandler handler) {
         fill(d, handler.getInfo());
         final ResourceProvider<?> provider = handler.getResourceProvider();
-        if ( provider != null ) {
+        if (provider != null) {
             d.supportsQueryLanguage = provider.getQueryLanguageProvider() != null;
         }
     }
@@ -488,31 +494,26 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
     private void updateProviderContext(final ResourceProviderHandler handler) {
         final Set<String> excludedPaths = new HashSet<>();
         final Path handlerPath = new Path(handler.getPath());
-
-        for(final String otherPath : handlers.keySet()) {
-            if ( !handler.getPath().equals(otherPath) && handlerPath.matches(otherPath) ) {
+        for (final String otherPath : handlers.keySet()) {
+            if ((!handler.getPath().equals(otherPath)) && handlerPath.matches(otherPath)) {
                 excludedPaths.add(otherPath);
             }
         }
-
         final PathSet excludedPathSet = PathSet.fromStringCollection(excludedPaths);
-        handler.getProviderContext().update(
-                reporterGenerator.create(handlerPath, excludedPathSet),
-                excludedPathSet);
+        handler.getProviderContext().update(reporterGenerator.create(handlerPath, excludedPathSet), excludedPathSet);
     }
 
     private void postEvents(final List<ProviderEvent> events) {
-        if ( events.isEmpty() ) {
+        if (events.isEmpty()) {
             return;
         }
-        if ( this.listener == null && this.providerReporter == null ) {
+        if ((this.listener == null) && (this.providerReporter == null)) {
             return;
         }
         final Thread t = new Thread(new Runnable() {
-
             @Override
             public void run() {
-                for(final ProviderEvent e : events) {
+                for (final ProviderEvent e : events) {
                     postOSGiEvent(e);
                     postResourceProviderChange(e);
                 }
@@ -520,13 +521,14 @@ public class ResourceProviderTracker implements ResourceProviderStorageProvider 
         });
         t.setName("Apache Sling Resource Provider Change Notifier");
         t.setDaemon(true);
-
         t.start();
     }
 
     private static final class ProviderEvent {
         public final boolean isAdd;
+
         public final Object pid;
+
         public final String path;
 
         public ProviderEvent(final boolean isAdd, final ResourceProviderInfo info) {

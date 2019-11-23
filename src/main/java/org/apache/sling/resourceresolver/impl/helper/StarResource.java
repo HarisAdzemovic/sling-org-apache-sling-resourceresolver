@@ -1,23 +1,21 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
  */
 package org.apache.sling.resourceresolver.impl.helper;
-
 import org.apache.sling.adapter.annotations.Adaptable;
 import org.apache.sling.adapter.annotations.Adapter;
 import org.apache.sling.api.SlingException;
@@ -25,16 +23,22 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceMetadata;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.SyntheticResource;
-
+import org.apache.sling.adapter.annotations.Adaptable;
+import org.apache.sling.adapter.annotations.Adapter;
+import org.apache.sling.api.SlingException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceMetadata;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.SyntheticResource;
 /**
  * Used to provide the equivalent of an empty Node for GET requests to
  * *.something (SLING-344)
  */
-@Adaptable(adaptableClass = Resource.class, adapters = @Adapter(value = { String.class }))
+@Adaptable(adaptableClass = Resource.class, adapters = @Adapter({ String.class }))
 public class StarResource extends SyntheticResource {
+    static final String SLASH_STAR = "/*";
 
-    final static String SLASH_STAR = "/*";
-    public final static String DEFAULT_RESOURCE_TYPE = "sling:syntheticStarResource";
+    public static final String DEFAULT_RESOURCE_TYPE = "sling:syntheticStarResource";
 
     private static final String UNSET_RESOURCE_SUPER_TYPE = "<unset>";
 
@@ -64,8 +68,7 @@ public class StarResource extends SyntheticResource {
     }
 
     public StarResource(ResourceResolver resourceResolver, String path) {
-        super(resourceResolver, getResourceMetadata(path),
-                DEFAULT_RESOURCE_TYPE);
+        super(resourceResolver, getResourceMetadata(path), DEFAULT_RESOURCE_TYPE);
         resourceSuperType = UNSET_RESOURCE_SUPER_TYPE;
     }
 
@@ -78,7 +81,7 @@ public class StarResource extends SyntheticResource {
     public String getResourceSuperType() {
         // Yes, this isn't how you're supposed to compare Strings, but this is
         // intentional.
-        if (resourceSuperType == UNSET_RESOURCE_SUPER_TYPE) {
+        if (resourceSuperType.equals(UNSET_RESOURCE_SUPER_TYPE)) {
             resourceSuperType = this.getResourceResolver().getParentResourceType(this.getResourceType());
         }
         return resourceSuperType;
@@ -88,21 +91,21 @@ public class StarResource extends SyntheticResource {
     @SuppressWarnings("unchecked")
     public <Type> Type adaptTo(Class<Type> type) {
         if (type == String.class) {
-            return (Type) "";
+            return ((Type) (""));
         }
         return super.adaptTo(type);
     }
 
-    /** Get our ResourceMetadata for given path */
+    /**
+     * Get our ResourceMetadata for given path
+     */
     static ResourceMetadata getResourceMetadata(String path) {
         ResourceMetadata result = new ResourceMetadata();
-
         // The path is up to /*, what follows is pathInfo
         final int index = path.indexOf(SLASH_STAR);
         if (index >= 0) {
             result.setResolutionPath(path.substring(0, index) + SLASH_STAR);
-            result.setResolutionPathInfo(path.substring(index
-                    + SLASH_STAR.length()));
+            result.setResolutionPathInfo(path.substring(index + SLASH_STAR.length()));
         } else {
             result.setResolutionPath(path);
         }

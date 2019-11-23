@@ -1,35 +1,52 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
  */
 package org.apache.sling.resourceresolver.impl.providers;
-
+import ResourceProvider.PROPERTY_ADAPTABLE;
+import ResourceProvider.PROPERTY_ATTRIBUTABLE;
+import ResourceProvider.PROPERTY_AUTHENTICATE;
+import ResourceProvider.PROPERTY_MODIFIABLE;
+import ResourceProvider.PROPERTY_NAME;
+import ResourceProvider.PROPERTY_REFRESHABLE;
+import ResourceProvider.PROPERTY_ROOT;
+import ResourceProvider.PROPERTY_USE_RESOURCE_ACCESS_SECURITY;
 import org.apache.sling.api.resource.runtime.dto.AuthType;
 import org.apache.sling.commons.osgi.PropertiesUtil;
-import org.apache.sling.spi.resource.provider.ResourceProvider;
 import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import AuthType.no;
+import ResourceProvider.PROPERTY_ADAPTABLE;
+import ResourceProvider.PROPERTY_ATTRIBUTABLE;
+import ResourceProvider.PROPERTY_AUTHENTICATE;
+import ResourceProvider.PROPERTY_MODIFIABLE;
+import ResourceProvider.PROPERTY_NAME;
+import ResourceProvider.PROPERTY_REFRESHABLE;
+import ResourceProvider.PROPERTY_ROOT;
+import ResourceProvider.PROPERTY_USE_RESOURCE_ACCESS_SECURITY;
+import org.apache.sling.api.resource.runtime.dto.AuthType;
+import org.apache.sling.commons.osgi.PropertiesUtil;
+import org.apache.sling.spi.resource.provider.ResourceProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Information about a registered resource provider
  */
 public class ResourceProviderInfo implements Comparable<ResourceProviderInfo> {
-
     private static final Logger logger = LoggerFactory.getLogger(ResourceProviderInfo.class);
 
     private final ServiceReference ref;
@@ -52,30 +69,30 @@ public class ResourceProviderInfo implements Comparable<ResourceProviderInfo> {
 
     public ResourceProviderInfo(final ServiceReference ref) {
         this.ref = ref;
-        this.path = PropertiesUtil.toString(ref.getProperty(ResourceProvider.PROPERTY_ROOT), "");
-        this.name = PropertiesUtil.toString(ref.getProperty(ResourceProvider.PROPERTY_NAME), null);
-        this.useResourceAccessSecurity = PropertiesUtil.toBoolean(ref.getProperty(ResourceProvider.PROPERTY_USE_RESOURCE_ACCESS_SECURITY), false);
-        final String authType = PropertiesUtil.toString(ref.getProperty(ResourceProvider.PROPERTY_AUTHENTICATE), AuthType.no.name());
+        this.path = PropertiesUtil.toString(ref.getProperty(PROPERTY_ROOT), "");
+        this.name = PropertiesUtil.toString(ref.getProperty(PROPERTY_NAME), null);
+        this.useResourceAccessSecurity = PropertiesUtil.toBoolean(ref.getProperty(PROPERTY_USE_RESOURCE_ACCESS_SECURITY), false);
+        final String authType = PropertiesUtil.toString(ref.getProperty(PROPERTY_AUTHENTICATE), no.name());
         AuthType aType = null;
         try {
             aType = AuthType.valueOf(authType);
-        } catch ( final IllegalArgumentException iae) {
+        } catch (final IllegalArgumentException iae) {
             logger.error("Illegal auth type {} for resource provider {}", authType, name);
         }
         this.authType = aType;
-        this.modifiable = PropertiesUtil.toBoolean(ref.getProperty(ResourceProvider.PROPERTY_MODIFIABLE), false);
-        this.adaptable = PropertiesUtil.toBoolean(ref.getProperty(ResourceProvider.PROPERTY_ADAPTABLE), false);
-        this.refreshable = PropertiesUtil.toBoolean(ref.getProperty(ResourceProvider.PROPERTY_REFRESHABLE), false);
-        this.attributable = PropertiesUtil.toBoolean(ref.getProperty(ResourceProvider.PROPERTY_ATTRIBUTABLE), false);
+        this.modifiable = PropertiesUtil.toBoolean(ref.getProperty(PROPERTY_MODIFIABLE), false);
+        this.adaptable = PropertiesUtil.toBoolean(ref.getProperty(PROPERTY_ADAPTABLE), false);
+        this.refreshable = PropertiesUtil.toBoolean(ref.getProperty(PROPERTY_REFRESHABLE), false);
+        this.attributable = PropertiesUtil.toBoolean(ref.getProperty(PROPERTY_ATTRIBUTABLE), false);
     }
 
     public boolean isValid() {
         // TODO - do real path check
-        if ( !path.startsWith("/") ) {
+        if (!path.startsWith("/")) {
             logger.debug("ResourceProvider path does not start with /, invalid: {}", path);
             return false;
         }
-        if ( this.authType == null ) {
+        if (this.authType == null) {
             logger.debug("ResourceProvider has null authType, invalid");
             return false;
         }
@@ -93,7 +110,7 @@ public class ResourceProviderInfo implements Comparable<ResourceProviderInfo> {
     @Override
     public int compareTo(final ResourceProviderInfo o) {
         int result = path.compareTo(o.path);
-        if ( result == 0 ) {
+        if (result == 0) {
             result = o.ref.compareTo(ref);
         }
         return result;
@@ -101,8 +118,7 @@ public class ResourceProviderInfo implements Comparable<ResourceProviderInfo> {
 
     @Override
     public String toString() {
-        return "ResourceProviderInfo [ref=" + ref + ", path=" + path + ", useResourceAccessSecurity="
-                + useResourceAccessSecurity + ", authType=" + authType + ", modifiable=" + modifiable + "]";
+        return ((((((((("ResourceProviderInfo [ref=" + ref) + ", path=") + path) + ", useResourceAccessSecurity=") + useResourceAccessSecurity) + ", authType=") + authType) + ", modifiable=") + modifiable) + "]";
     }
 
     public AuthType getAuthType() {

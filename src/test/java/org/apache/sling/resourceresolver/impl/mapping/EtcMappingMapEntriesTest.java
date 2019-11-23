@@ -1,38 +1,33 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with this
- * work for additional information regarding copyright ownership. The ASF
- * licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+/* Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements. See the NOTICE file distributed with this
+work for additional information regarding copyright ownership. The ASF
+licenses this file to You under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
  */
 package org.apache.sling.resourceresolver.impl.mapping;
-
-import static org.apache.sling.resourceresolver.impl.ResourceResolverImpl.PROP_REDIRECT_INTERNAL;
-import static org.apache.sling.resourceresolver.impl.mapping.MapEntries.PROP_REDIRECT_EXTERNAL;
-
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.resourceresolver.util.MockTestUtil.ExpectedEtcMapping;
 import org.junit.Test;
-
+import org.apache.sling.api.resource.Resource;
+import org.junit.Test;
+import static org.apache.sling.resourceresolver.impl.ResourceResolverImpl.PROP_REDIRECT_INTERNAL;
 /**
  * These tests are for the /etc/map setup of the Map Entries when
  * an /etc/map is present.
  */
 public class EtcMappingMapEntriesTest extends AbstractMappingMapEntriesTest {
-
     @Test
     public void root_node_to_content_mapping() throws Exception {
-        setupEtcMapResource("localhost.8080", http,PROP_REDIRECT_EXTERNAL, "/content/simple-node");
-
+        setupEtcMapResource("localhost.8080", http, PROP_REDIRECT_EXTERNAL, "/content/simple-node");
         mapEntries.doInit();
         ExpectedEtcMapping expectedEtcMapping = new ExpectedEtcMapping("^http/localhost.8080/", "/content/simple-node/");
         expectedEtcMapping.assertEtcMap("Etc Mapping for simple node", mapEntries.getResolveMaps());
@@ -40,22 +35,16 @@ public class EtcMappingMapEntriesTest extends AbstractMappingMapEntriesTest {
 
     @Test
     public void match_to_content_mapping() throws Exception {
-        setupEtcMapResource("test-node", http,
-            PROP_REG_EXP, "localhost.8080/",
-            PROP_REDIRECT_EXTERNAL, "/content/simple-match/"
-        );
-
+        setupEtcMapResource("test-node", http, PROP_REG_EXP, "localhost.8080/", PROP_REDIRECT_EXTERNAL, "/content/simple-match/");
         mapEntries.doInit();
         ExpectedEtcMapping expectedEtcMapping = new ExpectedEtcMapping("^http/localhost.8080/", "/content/simple-match/");
         expectedEtcMapping.assertEtcMap("Etc Mapping for simple match", mapEntries.getResolveMaps());
     }
 
     // The following tests are based on the example from the https://sling.apache.org/documentation/the-sling-engine/mappings-for-resource-resolution.html page
-
     @Test
     public void internal_to_external_node_mapping() throws Exception {
-        setupEtcMapResource("example.com.80", http,PROP_REDIRECT_EXTERNAL, "http://www.example.com/");
-
+        setupEtcMapResource("example.com.80", http, PROP_REDIRECT_EXTERNAL, "http://www.example.com/");
         mapEntries.doInit();
         ExpectedEtcMapping expectedEtcMapping = new ExpectedEtcMapping("^http/example.com.80/", "http://www.example.com/");
         expectedEtcMapping.assertEtcMap("Etc Mapping for internal to external based on node", mapEntries.getResolveMaps());
@@ -63,8 +52,7 @@ public class EtcMappingMapEntriesTest extends AbstractMappingMapEntriesTest {
 
     @Test
     public void internal_root_to_content_node_mapping() throws Exception {
-        setupEtcMapResource("www.example.com.80", http,PROP_REDIRECT_INTERNAL, "/example");
-
+        setupEtcMapResource("www.example.com.80", http, PROP_REDIRECT_INTERNAL, "/example");
         mapEntries.doInit();
         ExpectedEtcMapping expectedEtcMapping = new ExpectedEtcMapping().addEtcMapEntry("^http/www.example.com.80/", true, "/example/");
         expectedEtcMapping.assertEtcMap("Etc Mapping for internal root to content", mapEntries.getResolveMaps());
@@ -72,11 +60,7 @@ public class EtcMappingMapEntriesTest extends AbstractMappingMapEntriesTest {
 
     @Test
     public void host_redirect_match_mapping() throws Exception {
-        setupEtcMapResource("any_example.com.80", http,
-            PROP_REG_EXP, ".+\\.example\\.com\\.80",
-            PROP_REDIRECT_EXTERNAL, "http://www.example.com/"
-        );
-
+        setupEtcMapResource("any_example.com.80", http, PROP_REG_EXP, ".+\\.example\\.com\\.80", PROP_REDIRECT_EXTERNAL, "http://www.example.com/");
         mapEntries.doInit();
         ExpectedEtcMapping expectedEtcMapping = new ExpectedEtcMapping().addEtcMapEntry("^http/.+\\.example\\.com\\.80", false, "http://www.example.com/");
         expectedEtcMapping.assertEtcMap("Etc Mapping for host redirect match mapping", mapEntries.getResolveMaps());
@@ -84,20 +68,12 @@ public class EtcMappingMapEntriesTest extends AbstractMappingMapEntriesTest {
 
     @Test
     public void nested_internal_mixed_mapping() throws Exception {
-        Resource localhost = setupEtcMapResource("localhost_any", http,
-            PROP_REG_EXP, "localhost\\.\\d*",
-            PROP_REDIRECT_INTERNAL, "/content"
-        );
+        Resource localhost = setupEtcMapResource("localhost_any", http, PROP_REG_EXP, "localhost\\.\\d*", PROP_REDIRECT_INTERNAL, "/content");
         setupEtcMapResource("cgi-bin", localhost, PROP_REDIRECT_INTERNAL, "/scripts");
         setupEtcMapResource("gateway", localhost, PROP_REDIRECT_INTERNAL, "http://gbiv.com");
         setupEtcMapResource("(stories)", localhost, PROP_REDIRECT_INTERNAL, "/anecdotes/$1");
-
         mapEntries.doInit();
-        ExpectedEtcMapping expectedEtcMapping = new ExpectedEtcMapping()
-            .addEtcMapEntry("^http/localhost\\.\\d*", true, "/content")
-            .addEtcMapEntry("^http/localhost\\.\\d*/cgi-bin/", true, "/scripts/")
-            .addEtcMapEntry("^http/localhost\\.\\d*/gateway/", true, "http://gbiv.com/")
-            .addEtcMapEntry("^http/localhost\\.\\d*/(stories)/", true, "/anecdotes/$1/");
+        ExpectedEtcMapping expectedEtcMapping = new ExpectedEtcMapping().addEtcMapEntry("^http/localhost\\.\\d*", true, "/content").addEtcMapEntry("^http/localhost\\.\\d*/cgi-bin/", true, "/scripts/").addEtcMapEntry("^http/localhost\\.\\d*/gateway/", true, "http://gbiv.com/").addEtcMapEntry("^http/localhost\\.\\d*/(stories)/", true, "/anecdotes/$1/");
         expectedEtcMapping.assertEtcMap("Etc Mapping for nested internal mixed mapping", mapEntries.getResolveMaps());
     }
 }

@@ -1,22 +1,22 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. The SF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements. See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership. The SF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
  */
 package org.apache.sling.resourceresolver.impl.helper;
-
+import ResourceProvider.AUTH_SERVICE_BUNDLE;
+import ResourceResolverFactory.SUBSERVICE;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.apache.commons.collections4.iterators.IteratorChain;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.sling.api.resource.LoginException;
@@ -45,7 +44,6 @@ import org.apache.sling.api.resource.SyntheticResource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.resource.path.PathBuilder;
 import org.apache.sling.resourceresolver.impl.providers.ResourceProviderHandler;
-import org.apache.sling.resourceresolver.impl.providers.ResourceProviderInfo;
 import org.apache.sling.resourceresolver.impl.providers.ResourceProviderStorage;
 import org.apache.sling.resourceresolver.impl.providers.ResourceProviderStorageProvider;
 import org.apache.sling.resourceresolver.impl.providers.stateful.AuthenticatedResourceProvider;
@@ -58,7 +56,23 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import ResourceProvider.AUTH_SERVICE_BUNDLE;
+import ResourceResolverFactory.SUBSERVICE;
+import org.apache.commons.collections4.iterators.IteratorChain;
+import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.api.resource.SyntheticResource;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.resource.path.PathBuilder;
+import org.apache.sling.spi.resource.provider.ResourceProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * This class takes a number of {@link AuthenticatedResourceProvider} objects and
  * exposes it as one such object. Provider appropriate for the given operation
@@ -68,24 +82,28 @@ import org.slf4j.LoggerFactory;
  * Like a resource resolver itself, this class is not thread safe.
  */
 public class ResourceResolverControl {
-
     private static final Logger logger = LoggerFactory.getLogger(ResourceResolverControl.class);
 
-    private static final String[] FORBIDDEN_ATTRIBUTES = new String[] {
-            ResourceResolverFactory.PASSWORD,
-            ResourceProvider.AUTH_SERVICE_BUNDLE,
-            ResourceResolverFactory.SUBSERVICE};
+    private static final String[] FORBIDDEN_ATTRIBUTES = new String[]{ ResourceResolverFactory.PASSWORD, ResourceProvider.AUTH_SERVICE_BUNDLE, ResourceResolverFactory.SUBSERVICE };
 
-    /** Is this a resource resolver for an admin? */
+    /**
+     * Is this a resource resolver for an admin?
+     */
     private final boolean isAdmin;
 
-    /** The authentication info. */
+    /**
+     * The authentication info.
+     */
     private final Map<String, Object> authenticationInfo;
 
-    /** Resource type resource resolver (admin resolver) */
+    /**
+     * Resource type resource resolver (admin resolver)
+     */
     private volatile ResourceResolver resourceTypeResourceResolver;
 
-    /** Flag for handling multiple calls to close. */
+    /**
+     * Flag for handling multiple calls to close.
+     */
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
     private final ResourceProviderStorageProvider resourceProviderTracker;
@@ -95,9 +113,7 @@ public class ResourceResolverControl {
     /**
      * Create a new resource resolver context.
      */
-    public ResourceResolverControl(final boolean isAdmin,
-            final Map<String, Object> authenticationInfo,
-            final ResourceProviderStorageProvider resourceProviderTracker) {
+    public ResourceResolverControl(final boolean isAdmin, final Map<String, Object> authenticationInfo, final ResourceProviderStorageProvider resourceProviderTracker) {
         this.authenticatedProviders = new IdentityHashMap<>();
         this.authenticationInfo = authenticationInfo;
         this.isAdmin = isAdmin;
@@ -106,7 +122,8 @@ public class ResourceResolverControl {
 
     /**
      * Is this an admin resource resolver?
-     * @return{@code true} if it is an admin resource resolver
+     *
+     * @unknown true} if it is an admin resource resolver
      */
     public boolean isAdmin() {
         return isAdmin;
@@ -114,6 +131,7 @@ public class ResourceResolverControl {
 
     /**
      * The authentication info
+     *
      * @return The map with the auth info
      */
     public Map<String, Object> getAuthenticationInfo() {
@@ -122,6 +140,7 @@ public class ResourceResolverControl {
 
     /**
      * Is this already closed?
+     *
      * @return {@code true} if it is closed.
      */
     public boolean isClosed() {
@@ -132,15 +151,15 @@ public class ResourceResolverControl {
      * Logs out from all providers.
      */
     private void logout() {
-        for(final Map.Entry<ResourceProviderHandler, Object> entry : this.authenticatedProviders.entrySet()) {
+        for (final Map.Entry<ResourceProviderHandler, Object> entry : this.authenticatedProviders.entrySet()) {
             try {
                 final ResourceProvider<Object> rp = entry.getKey().getResourceProvider();
-                if ( rp != null ) {
+                if (rp != null) {
                     rp.logout(entry.getValue());
-                } else if ( entry.getValue() instanceof Closeable ) {
-                    ((Closeable)entry.getValue()).close();
+                } else if (entry.getValue() instanceof Closeable) {
+                    ((Closeable) (entry.getValue())).close();
                 }
-            } catch ( final Throwable t ) {
+            } catch (final Throwable t) {
                 // we ignore everything from there to not stop this thread
             }
         }
@@ -150,7 +169,8 @@ public class ResourceResolverControl {
     /**
      * Refreshes all refreshable providers as well as the resolver used for resource types.
      */
-    public void refresh(@NotNull final ResourceResolverContext context) {
+    public void refresh(@NotNull
+    final ResourceResolverContext context) {
         for (final AuthenticatedResourceProvider p : context.getProviderManager().getAllUsedRefreshable()) {
             p.refresh();
         }
@@ -162,7 +182,8 @@ public class ResourceResolverControl {
     /**
      * Returns {@code true} if all providers are live.
      */
-    public boolean isLive(@NotNull final ResourceResolverContext context) {
+    public boolean isLive(@NotNull
+    final ResourceResolverContext context) {
         for (final AuthenticatedResourceProvider p : context.getProviderManager().getAllAuthenticated()) {
             if (!p.isLive()) {
                 return false;
@@ -179,12 +200,15 @@ public class ResourceResolverControl {
      * resource provider returns parent for this child. See
      * {@link #getResource(String, Resource, Map, boolean)} for more details
      */
-    public Resource getParent(@NotNull final ResourceResolverContext context, @NotNull final String parentPath, @NotNull final Resource child) {
+    public Resource getParent(@NotNull
+    final ResourceResolverContext context, @NotNull
+    final String parentPath, @NotNull
+    final Resource child) {
         final AuthenticatedResourceProvider childProvider = getBestMatchingProvider(context, child.getPath());
         final AuthenticatedResourceProvider parentProvider = getBestMatchingProvider(context, parentPath);
-        if ( parentProvider != null ) {
+        if (parentProvider != null) {
             final Resource parentCandidate;
-            if ( childProvider == parentProvider ) {
+            if (childProvider == parentProvider) {
                 parentCandidate = parentProvider.getParent(child);
             } else {
                 parentCandidate = parentProvider.getResource(parentPath, null, null);
@@ -193,7 +217,6 @@ public class ResourceResolverControl {
                 return parentCandidate;
             }
         }
-
         if (isIntermediatePath(parentPath)) {
             return new SyntheticResource(context.getResourceResolver(), parentPath, ResourceProvider.RESOURCE_TYPE_SYNTHETIC);
         }
@@ -214,30 +237,27 @@ public class ResourceResolverControl {
      * The same behaviour occurs in {@link #getParent(Resource)} and
      * {@link #listChildren(Resource)}.
      */
-    public Resource getResource(final ResourceResolverContext context,
-            String path, Resource parent, Map<String, String> parameters,
-            boolean isResolve) {
-        if (path == null || path.length() == 0 || path.charAt(0) != '/') {
+    public Resource getResource(final ResourceResolverContext context, String path, Resource parent, Map<String, String> parameters, boolean isResolve) {
+        if (((path == null) || (path.length() == 0)) || (path.charAt(0) != '/')) {
             logger.debug("Not absolute {}", path);
-            return null; // path must be absolute
-        }
+            return null;// path must be absolute
 
+        }
         final AuthenticatedResourceProvider provider = this.getBestMatchingProvider(context, path);
-        if ( provider != null ) {
+        if (provider != null) {
             final Resource resourceCandidate = provider.getResource(path, parent, parameters);
             if (resourceCandidate != null) {
                 return resourceCandidate;
             }
         }
-
         // query: /libs/sling/servlet/default
         // resource Provider: libs/sling/servlet/default/GET.servlet
         // list will match libs, sling, servlet, default
         // and there will be no resource provider at the end
         // SLING-3482 : this is only done for getResource but not resolve
-        //              as it is important e.g. for servlet resolution
-        //              to get the parent resource for resource traversal.
-        if (!isResolve && isIntermediatePath(path)) {
+        // as it is important e.g. for servlet resolution
+        // to get the parent resource for resource traversal.
+        if ((!isResolve) && isIntermediatePath(path)) {
             logger.debug("Resolved Synthetic {}", path);
             return new SyntheticResource(context.getResourceResolver(), path, ResourceProvider.RESOURCE_TYPE_SYNTHETIC);
         }
@@ -260,31 +280,25 @@ public class ResourceResolverControl {
     @SuppressWarnings("unchecked")
     public Iterator<Resource> listChildren(final ResourceResolverContext context, final Resource parent) {
         final String parentPath = parent.getPath();
-
         // 3 sources are combined: children of the provider which owns 'parent',
         // providers which are directly mounted at a child path,
         // synthetic resources for providers mounted at a lower level
-
         // children of the 'parent' provider
         Iterator<Resource> realChildren = null;
         final AuthenticatedResourceProvider provider = this.getBestMatchingProvider(context, parentPath);
-        if ( provider != null ) {
+        if (provider != null) {
             realChildren = provider.listChildren(parent);
         }
-
         final Set<String> visitedNames = new HashSet<>();
-
         IteratorChain chain = new IteratorChain();
-        if ( realChildren != null ) {
+        if (realChildren != null) {
             chain.addIterator(realChildren);
         }
-
         // synthetic and providers are done in one loop
         final Node<ResourceProviderHandler> node = getResourceProviderStorage().getTree().getNode(parent.getPath());
         if (node != null) {
             final List<Resource> syntheticList = new ArrayList<>();
             final List<Resource> providerList = new ArrayList<>();
-
             for (final Entry<String, Node<ResourceProviderHandler>> entry : node.getChildren().entrySet()) {
                 final String name = entry.getKey();
                 final ResourceProviderHandler handler = entry.getValue().getValue();
@@ -297,31 +311,27 @@ public class ResourceResolverControl {
                     Resource rsrc = null;
                     try {
                         final AuthenticatedResourceProvider rp = context.getProviderManager().getOrCreateProvider(handler, this);
-                        rsrc = rp == null ? null : rp.getResource(childPath, parent, null);
-                    } catch ( final LoginException ignore) {
+                        rsrc = (rp == null) ? null : rp.getResource(childPath, parent, null);
+                    } catch (final LoginException ignore) {
                         // ignore
                     }
-                    if ( rsrc != null ) {
+                    if (rsrc != null) {
                         providerList.add(rsrc);
+                    } else if (entry.getValue().getChildren().isEmpty()) {
+                        syntheticList.add(new SyntheticResource(context.getResourceResolver(), childPath, ResourceProvider.RESOURCE_TYPE_SYNTHETIC));
                     } else {
-                        // if there is a child provider underneath, we need to create a synthetic resource
-                        // otherwise we need to make sure that no one else is providing this child
-                        if ( entry.getValue().getChildren().isEmpty() ) {
-                            syntheticList.add(new SyntheticResource(context.getResourceResolver(), childPath, ResourceProvider.RESOURCE_TYPE_SYNTHETIC));
-                        } else {
-                            visitedNames.add(name);
-                        }
+                        visitedNames.add(name);
                     }
                 }
             }
-            if ( !providerList.isEmpty() ) {
+            if (!providerList.isEmpty()) {
                 chain.addIterator(providerList.iterator());
             }
-            if ( !syntheticList.isEmpty() ) {
+            if (!syntheticList.isEmpty()) {
                 chain.addIterator(syntheticList.iterator());
             }
         }
-        if ( chain.size() == 0 ) {
+        if (chain.size() == 0) {
             return Collections.EMPTY_LIST.iterator();
         }
         return new UniqueResourceIterator(visitedNames, chain);
@@ -335,10 +345,10 @@ public class ResourceResolverControl {
         for (final AuthenticatedResourceProvider p : context.getProviderManager().getAllBestEffort(getResourceProviderStorage().getAttributableHandlers(), this)) {
             p.getAttributeNames(names);
         }
-        if ( this.authenticationInfo != null ) {
+        if (this.authenticationInfo != null) {
             names.addAll(authenticationInfo.keySet());
         }
-        for(final String key : FORBIDDEN_ATTRIBUTES) {
+        for (final String key : FORBIDDEN_ATTRIBUTES) {
             names.remove(key);
         }
         return names;
@@ -350,7 +360,7 @@ public class ResourceResolverControl {
      * the providers.
      */
     public Object getAttribute(final ResourceResolverContext context, final String name) {
-        for(final String key : FORBIDDEN_ATTRIBUTES) {
+        for (final String key : FORBIDDEN_ATTRIBUTES) {
             if (key.equals(name)) {
                 return null;
             }
@@ -361,29 +371,27 @@ public class ResourceResolverControl {
                 return attribute;
             }
         }
-        return this.authenticationInfo != null ? this.authenticationInfo.get(name) :null;
+        return this.authenticationInfo != null ? this.authenticationInfo.get(name) : null;
     }
 
     /**
      * Create a resource.
      *
      * @throws UnsupportedOperationException
-     *             If creation is not allowed/possible
+     * 		If creation is not allowed/possible
      * @throws PersistenceException
-     *             If creation fails
+     * 		If creation fails
      * @return The new resource
      */
-    public Resource create(final ResourceResolverContext context,
-            final String path, final Map<String, Object> properties)
-                    throws PersistenceException {
+    public Resource create(final ResourceResolverContext context, final String path, final Map<String, Object> properties) throws PersistenceException {
         final AuthenticatedResourceProvider provider = getBestMatchingModifiableProvider(context, path);
-        if ( provider != null ) {
+        if (provider != null) {
             final Resource creationResultResource = provider.create(context.getResourceResolver(), path, properties);
             if (creationResultResource != null) {
                 return creationResultResource;
             }
         }
-        throw new UnsupportedOperationException("create '" + ResourceUtil.getName(path) + "' at " + ResourceUtil.getParent(path));
+        throw new UnsupportedOperationException((("create '" + ResourceUtil.getName(path)) + "' at ") + ResourceUtil.getParent(path));
     }
 
     /**
@@ -391,20 +399,20 @@ public class ResourceResolverControl {
      * giving each an opportunity to delete the resource if they are able.
      *
      * @throws NullPointerException
-     *             if resource is null
+     * 		if resource is null
      * @throws UnsupportedOperationException
-     *             If deletion is not allowed/possible
+     * 		If deletion is not allowed/possible
      * @throws PersistenceException
-     *             If deletion fails
+     * 		If deletion fails
      */
     public void delete(final ResourceResolverContext context, final Resource resource) throws PersistenceException {
         final String path = resource.getPath();
         final AuthenticatedResourceProvider provider = getBestMatchingModifiableProvider(context, path);
-        if ( provider != null ) {
+        if (provider != null) {
             provider.delete(resource);
             return;
         }
-        throw new UnsupportedOperationException("delete at '" + path + "'");
+        throw new UnsupportedOperationException(("delete at '" + path) + "'");
     }
 
     /**
@@ -451,19 +459,16 @@ public class ResourceResolverControl {
     /**
      * Queries all resource providers and combines the results.
      */
-    public Iterator<Resource> findResources(final ResourceResolverContext context,
-            final String query, final String language) {
+    public Iterator<Resource> findResources(final ResourceResolverContext context, final String query, final String language) {
         final List<AuthenticatedResourceProvider> queryableRP = getQueryableProviders(context, language);
         final List<Iterator<Resource>> iterators = new ArrayList<>(queryableRP.size());
         for (AuthenticatedResourceProvider p : queryableRP) {
             iterators.add(p.findResources(query, language));
         }
-        return new ChainedIterator<>(iterators.iterator());
+        return new ChainedIterator(iterators.iterator());
     }
 
-    private List<AuthenticatedResourceProvider> getQueryableProviders(
-            final ResourceResolverContext context,
-            final String language) {
+    private List<AuthenticatedResourceProvider> getQueryableProviders(final ResourceResolverContext context, final String language) {
         final List<AuthenticatedResourceProvider> queryableProviders = new ArrayList<>();
         for (final AuthenticatedResourceProvider p : context.getProviderManager().getAllBestEffort(getResourceProviderStorage().getLanguageQueryableHandlers(), this)) {
             if (ArrayUtils.contains(p.getSupportedLanguages(), language)) {
@@ -476,8 +481,7 @@ public class ResourceResolverControl {
     /**
      * Queries all resource providers and combines the results.
      */
-    public Iterator<Map<String, Object>> queryResources(final ResourceResolverContext context,
-            final String query, final String language) {
+    public Iterator<Map<String, Object>> queryResources(final ResourceResolverContext context, final String query, final String language) {
         final List<AuthenticatedResourceProvider> queryableRP = getQueryableProviders(context, language);
         final List<Iterator<Map<String, Object>>> iterators = new ArrayList<>(queryableRP.size());
         for (AuthenticatedResourceProvider p : queryableRP) {
@@ -495,14 +499,13 @@ public class ResourceResolverControl {
         for (AuthenticatedResourceProvider p : context.getProviderManager().getAllBestEffort(getResourceProviderStorage().getAdaptableHandlers(), this)) {
             final Object adaptee = p.adaptTo(type);
             if (adaptee != null) {
-                return (AdapterType) adaptee;
+                return ((AdapterType) (adaptee));
             }
         }
         return null;
     }
 
-    private AuthenticatedResourceProvider checkExistence(final ResourceResolverContext context, final String path,
-            final String type) throws PersistenceException {
+    private AuthenticatedResourceProvider checkExistence(final ResourceResolverContext context, final String path, final String type) throws PersistenceException {
         final Node<ResourceProviderHandler> node = getResourceProviderStorage().getTree().getBestMatchingNode(path);
         if (node == null) {
             throw new PersistenceException(type.concat(" resource does not exist."), null, path, null);
@@ -523,13 +526,11 @@ public class ResourceResolverControl {
         return provider;
     }
 
-    public AuthenticatedResourceProvider checkSourceAndDest(final ResourceResolverContext context,
-            final String srcAbsPath, final String destAbsPath) throws PersistenceException {
+    public AuthenticatedResourceProvider checkSourceAndDest(final ResourceResolverContext context, final String srcAbsPath, final String destAbsPath) throws PersistenceException {
         // check source
         final AuthenticatedResourceProvider srcProvider = checkExistence(context, srcAbsPath, "Source");
         // check destination
         final AuthenticatedResourceProvider destProvider = checkExistence(context, destAbsPath, "Destination");
-
         // check for sub providers of src and dest
         if (srcProvider == destProvider) {
             final PathTree<ResourceProviderHandler> providerTree = getResourceProviderStorage().getTree();
@@ -559,7 +560,6 @@ public class ResourceResolverControl {
                 }
             }
         }
-
         return false;
     }
 
@@ -567,7 +567,7 @@ public class ResourceResolverControl {
         final ValueMap vm = src.getValueMap();
         final String createPath = new PathBuilder(dstPath).append(src.getName()).toString();
         newNodes.add(this.create(context, createPath, vm));
-        for(final Resource c : src.getChildren()) {
+        for (final Resource c : src.getChildren()) {
             copy(context, c, createPath, newNodes);
         }
     }
@@ -577,13 +577,11 @@ public class ResourceResolverControl {
      * {@link AuthenticatedResourceProvider#copy(String, String)} method on it.
      * Returns false if there's no such provider.
      */
-    public Resource copy(final ResourceResolverContext context,
-            final String srcAbsPath, final String destAbsPath) throws PersistenceException {
+    public Resource copy(final ResourceResolverContext context, final String srcAbsPath, final String destAbsPath) throws PersistenceException {
         final AuthenticatedResourceProvider optimizedSourceProvider = checkSourceAndDest(context, srcAbsPath, destAbsPath);
-        if ( optimizedSourceProvider != null && optimizedSourceProvider.copy(srcAbsPath, destAbsPath) ) {
-            return this.getResource(context, destAbsPath + '/' + ResourceUtil.getName(srcAbsPath), null, null, false);
+        if ((optimizedSourceProvider != null) && optimizedSourceProvider.copy(srcAbsPath, destAbsPath)) {
+            return this.getResource(context, (destAbsPath + '/') + ResourceUtil.getName(srcAbsPath), null, null, false);
         }
-
         final Resource srcResource = this.getResource(context, srcAbsPath, null, null, false);
         final List<Resource> newResources = new ArrayList<>();
         boolean rollback = true;
@@ -592,8 +590,8 @@ public class ResourceResolverControl {
             rollback = false;
             return newResources.get(0);
         } finally {
-            if ( rollback ) {
-                for(final Resource rsrc : newResources) {
+            if (rollback) {
+                for (final Resource rsrc : newResources) {
                     this.delete(context, rsrc);
                 }
             }
@@ -605,11 +603,10 @@ public class ResourceResolverControl {
      * {@link AuthenticatedResourceProvider#move(String, String)} method on it.
      * Returns false if there's no such provider.
      */
-    public Resource move(final ResourceResolverContext context,
-            String srcAbsPath, String destAbsPath) throws PersistenceException {
+    public Resource move(final ResourceResolverContext context, String srcAbsPath, String destAbsPath) throws PersistenceException {
         final AuthenticatedResourceProvider optimizedSourceProvider = checkSourceAndDest(context, srcAbsPath, destAbsPath);
-        if ( optimizedSourceProvider != null && optimizedSourceProvider.move(srcAbsPath, destAbsPath) ) {
-            return this.getResource(context, destAbsPath + '/' + ResourceUtil.getName(srcAbsPath), null, null, false);
+        if ((optimizedSourceProvider != null) && optimizedSourceProvider.move(srcAbsPath, destAbsPath)) {
+            return this.getResource(context, (destAbsPath + '/') + ResourceUtil.getName(srcAbsPath), null, null, false);
         }
         final Resource srcResource = this.getResource(context, srcAbsPath, null, null, false);
         final List<Resource> newResources = new ArrayList<>();
@@ -620,8 +617,8 @@ public class ResourceResolverControl {
             rollback = false;
             return newResources.get(0);
         } finally {
-            if ( rollback ) {
-                for(final Resource rsrc : newResources) {
+            if (rollback) {
+                for (final Resource rsrc : newResources) {
                     this.delete(context, rsrc);
                 }
             }
@@ -633,32 +630,37 @@ public class ResourceResolverControl {
     }
 
     /**
+     *
+     *
      * @param path
-     * @return
+     * 		
+     * @return 
      */
-    private @Nullable AuthenticatedResourceProvider getBestMatchingProvider(final ResourceResolverContext context,
-            final String path) {
+    @Nullable
+    private AuthenticatedResourceProvider getBestMatchingProvider(final ResourceResolverContext context, final String path) {
         try {
             final Node<ResourceProviderHandler> node = resourceProviderTracker.getResourceProviderStorage().getTree().getBestMatchingNode(path);
             return node == null ? null : context.getProviderManager().getOrCreateProvider(node.getValue(), this);
-        } catch ( final LoginException le ) {
+        } catch (final LoginException le) {
             // ignore
             return null;
         }
     }
 
     /**
+     *
+     *
      * @param path
+     * 		
      * @return The modifiable provider or {@code null}
      */
-    private @Nullable AuthenticatedResourceProvider getBestMatchingModifiableProvider(
-            final ResourceResolverContext context,
-            final String path)  {
+    @Nullable
+    private AuthenticatedResourceProvider getBestMatchingModifiableProvider(final ResourceResolverContext context, final String path) {
         final Node<ResourceProviderHandler> node = resourceProviderTracker.getResourceProviderStorage().getTree().getBestMatchingNode(path);
-        if ( node != null && node.getValue().getInfo().isModifiable() ) {
+        if ((node != null) && node.getValue().getInfo().isModifiable()) {
             try {
                 return context.getProviderManager().getOrCreateProvider(node.getValue(), this);
-            } catch ( final LoginException le ) {
+            } catch (final LoginException le) {
                 // ignore
                 return null;
             }
@@ -666,17 +668,16 @@ public class ResourceResolverControl {
         return null;
     }
 
-
     /**
      * Close all dynamic resource providers.
      */
     public void close() {
         if (this.isClosed.compareAndSet(false, true)) {
             this.logout();
-            if ( this.resourceTypeResourceResolver != null ) {
+            if (this.resourceTypeResourceResolver != null) {
                 try {
                     this.resourceTypeResourceResolver.close();
-                } catch ( final Throwable t) {
+                } catch (final Throwable t) {
                     // the resolver (or the underlying provider) might already be terminated (bundle stopped etc.)
                     // so we ignore anything from here
                 }
@@ -685,20 +686,18 @@ public class ResourceResolverControl {
         }
     }
 
-    private ResourceResolver getResourceTypeResourceResolver(
-            final ResourceResolverFactory factory,
-            final ResourceResolver resolver) {
-        if ( this.isAdmin ) {
+    private ResourceResolver getResourceTypeResourceResolver(final ResourceResolverFactory factory, final ResourceResolver resolver) {
+        if (this.isAdmin) {
             return resolver;
         } else {
-            if ( this.resourceTypeResourceResolver == null ) {
+            if (this.resourceTypeResourceResolver == null) {
                 try {
                     // make sure we're getting the resourceTypeResourceResolver on behalf of
                     // the resourceresolver bundle
                     final Bundle bundle = FrameworkUtil.getBundle(ResourceResolverControl.class);
                     final Map<String, Object> authenticationInfo = new HashMap<>();
-                    authenticationInfo.put(ResourceProvider.AUTH_SERVICE_BUNDLE, bundle);
-                    authenticationInfo.put(ResourceResolverFactory.SUBSERVICE, "hierarchy");
+                    authenticationInfo.put(AUTH_SERVICE_BUNDLE, bundle);
+                    authenticationInfo.put(SUBSERVICE, "hierarchy");
                     this.resourceTypeResourceResolver = factory.getServiceResourceResolver(authenticationInfo);
                 } catch (final LoginException e) {
                     throw new IllegalStateException("Failed to create resource-type ResourceResolver", e);
@@ -713,18 +712,14 @@ public class ResourceResolverControl {
      *
      * @see org.apache.sling.api.resource.ResourceResolver#getParentResourceType(java.lang.String)
      */
-    public String getParentResourceType(
-            final ResourceResolverFactory factory,
-            final ResourceResolver resolver,
-            final String resourceType) {
+    public String getParentResourceType(final ResourceResolverFactory factory, final ResourceResolver resolver, final String resourceType) {
         // normalize resource type to a path string
-        final String rtPath = (resourceType == null ? null : ResourceUtil.resourceTypeToPath(resourceType));
+        final String rtPath = (resourceType == null) ? null : ResourceUtil.resourceTypeToPath(resourceType);
         // get the resource type resource and check its super type
         String resourceSuperType = null;
-
-        if ( rtPath != null ) {
+        if (rtPath != null) {
             ResourceResolver adminResolver = this.getResourceTypeResourceResolver(factory, resolver);
-            if ( adminResolver != null ) {
+            if (adminResolver != null) {
                 final Resource rtResource = adminResolver.getResource(rtPath);
                 if (rtResource != null) {
                     resourceSuperType = rtResource.getResourceSuperType();
@@ -738,10 +733,12 @@ public class ResourceResolverControl {
      * Returns {@link #getProperty(Resource, String, Class) getProperty(res,
      * propName, String.class)}
      *
-     * @param res The resource to access the property from
-     * @param propName The name of the property to access
+     * @param res
+     * 		The resource to access the property from
+     * @param propName
+     * 		The name of the property to access
      * @return The property as a {@code String} or {@code null} if the property
-     *         does not exist or cannot be converted into a {@code String}
+    does not exist or cannot be converted into a {@code String}
      */
     public static String getProperty(final Resource res, final String propName) {
         return getProperty(res, propName, String.class);
@@ -759,15 +756,17 @@ public class ResourceResolverControl {
      * JCR {@code ValueMap}, however in non JCR envs there is usually no
      * "jcr:content" child node anyway
      *
-     * @param res The resource to access the property from
-     * @param propName The name of the property to access
-     * @param type The type into which to convert the property
+     * @param res
+     * 		The resource to access the property from
+     * @param propName
+     * 		The name of the property to access
+     * @param type
+     * 		The type into which to convert the property
      * @return The property converted to the requested {@code type} or
-     *         {@code null} if the property does not exist or cannot be
-     *         converted into the requested {@code type}
+    {@code null} if the property does not exist or cannot be
+    converted into the requested {@code type}
      */
     public static <Type> Type getProperty(final Resource res, final String propName, final Class<Type> type) {
-
         // check the property in the resource itself
         final ValueMap props = res.adaptTo(ValueMap.class);
         if (props != null) {
@@ -784,12 +783,12 @@ public class ResourceResolverControl {
             prop = props.get("jcr:content/" + propName, type);
             return prop;
         }
-
         return null;
     }
 
-    public void registerAuthenticatedProvider(@NotNull ResourceProviderHandler handler,
-            @Nullable Object providerState) {
+    public void registerAuthenticatedProvider(@NotNull
+    ResourceProviderHandler handler, @Nullable
+    Object providerState) {
         this.authenticatedProviders.put(handler, providerState);
     }
 

@@ -1,30 +1,24 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
  */
 package org.apache.sling.resourceresolver.impl.legacy;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.NotNull;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.PersistenceException;
@@ -35,10 +29,21 @@ import org.apache.sling.spi.resource.provider.QueryLanguageProvider;
 import org.apache.sling.spi.resource.provider.ResolveContext;
 import org.apache.sling.spi.resource.provider.ResourceContext;
 import org.apache.sling.spi.resource.provider.ResourceProvider;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceProviderFactory;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.spi.resource.provider.QueryLanguageProvider;
+import org.apache.sling.spi.resource.provider.ResolveContext;
+import org.apache.sling.spi.resource.provider.ResourceContext;
+import org.apache.sling.spi.resource.provider.ResourceProvider;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 @SuppressWarnings({ "deprecation", "rawtypes", "unchecked" })
 public class LegacyResourceProviderFactoryAdapter extends ResourceProvider<LegacyResourceProviderAdapter> {
-
     private final ResourceProviderFactory rpFactory;
 
     private final String[] languages;
@@ -53,33 +58,36 @@ public class LegacyResourceProviderFactoryAdapter extends ResourceProvider<Legac
 
     @Override
     @NotNull
-    public LegacyResourceProviderAdapter authenticate(final @NotNull Map<String, Object> authenticationInfo)
-            throws LoginException {
+    public LegacyResourceProviderAdapter authenticate(@NotNull
+    final Map<String, Object> authenticationInfo) throws LoginException {
         return new LegacyResourceProviderAdapter(rpFactory.getResourceProvider(authenticationInfo), languages, ownsRoot);
     }
 
     @Override
-    public void logout(final @NotNull LegacyResourceProviderAdapter state) {
+    public void logout(@NotNull
+    final LegacyResourceProviderAdapter state) {
         state.logout(null);
     }
 
     @Override
     public Resource getResource(ResolveContext<LegacyResourceProviderAdapter> ctx, String path, ResourceContext resourceContext, Resource parent) {
-        return ctx.getProviderState().getResource((ResolveContext) ctx, path, resourceContext, parent);
+        return ctx.getProviderState().getResource(((ResolveContext) (ctx)), path, resourceContext, parent);
     }
 
     @Override
     public Iterator<Resource> listChildren(ResolveContext<LegacyResourceProviderAdapter> ctx, Resource parent) {
-        return ctx.getProviderState().listChildren((ResolveContext) ctx, parent);
+        return ctx.getProviderState().listChildren(((ResolveContext) (ctx)), parent);
     }
 
     @Override
-    public void refresh(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx) {
-        ctx.getProviderState().refresh((ResolveContext) ctx);
+    public void refresh(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx) {
+        ctx.getProviderState().refresh(((ResolveContext) (ctx)));
     }
 
     @Override
-    public @Nullable QueryLanguageProvider<LegacyResourceProviderAdapter> getQueryLanguageProvider() {
+    @Nullable
+    public QueryLanguageProvider<LegacyResourceProviderAdapter> getQueryLanguageProvider() {
         if (ArrayUtils.isEmpty(languages)) {
             return super.getQueryLanguageProvider();
         } else {
@@ -88,55 +96,63 @@ public class LegacyResourceProviderFactoryAdapter extends ResourceProvider<Legac
     }
 
     @Override
-    public Collection<String> getAttributeNames(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx) {
-        return ctx.getProviderState().getAttributeNames((ResolveContext) ctx);
+    public Collection<String> getAttributeNames(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx) {
+        return ctx.getProviderState().getAttributeNames(((ResolveContext) (ctx)));
     }
 
     @Override
-    public Object getAttribute(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx,
-            final @NotNull String name) {
-        return ctx.getProviderState().getAttribute((ResolveContext) ctx, name);
+    public Object getAttribute(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx, @NotNull
+    final String name) {
+        return ctx.getProviderState().getAttribute(((ResolveContext) (ctx)), name);
     }
 
     @Override
-    public boolean isLive(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx) {
-        return ctx.getProviderState().isLive((ResolveContext) ctx);
+    public boolean isLive(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx) {
+        return ctx.getProviderState().isLive(((ResolveContext) (ctx)));
     }
 
     @Override
-    public Resource create(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx, final String path,
-            final Map<String, Object> properties) throws PersistenceException {
-        return ctx.getProviderState().create((ResolveContext) ctx, path, properties);
+    public Resource create(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx, final String path, final Map<String, Object> properties) throws PersistenceException {
+        return ctx.getProviderState().create(((ResolveContext) (ctx)), path, properties);
     }
 
     @Override
-    public void delete(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx,
-            final @NotNull Resource resource) throws PersistenceException {
-        ctx.getProviderState().delete((ResolveContext) ctx, resource);
+    public void delete(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx, @NotNull
+    final Resource resource) throws PersistenceException {
+        ctx.getProviderState().delete(((ResolveContext) (ctx)), resource);
     }
 
     @Override
-    public void revert(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx) {
-        ctx.getProviderState().revert((ResolveContext) ctx);
+    public void revert(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx) {
+        ctx.getProviderState().revert(((ResolveContext) (ctx)));
     }
 
     @Override
-    public void commit(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx) throws PersistenceException {
-        ctx.getProviderState().commit((ResolveContext) ctx);
+    public void commit(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx) throws PersistenceException {
+        ctx.getProviderState().commit(((ResolveContext) (ctx)));
     }
 
     @Override
-    public boolean hasChanges(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx) {
-        return ctx.getProviderState().hasChanges((ResolveContext) ctx);
+    public boolean hasChanges(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx) {
+        return ctx.getProviderState().hasChanges(((ResolveContext) (ctx)));
     }
 
     @Override
-    public <AdapterType> AdapterType adaptTo(final @NotNull ResolveContext<LegacyResourceProviderAdapter> ctx, final @NotNull Class<AdapterType> type) {
-        return (AdapterType) ctx.getProviderState().adaptTo((ResolveContext)ctx, type);
+    public <AdapterType> AdapterType adaptTo(@NotNull
+    final ResolveContext<LegacyResourceProviderAdapter> ctx, @NotNull
+    final Class<AdapterType> type) {
+        return ((AdapterType) (ctx.getProviderState().adaptTo(((ResolveContext) (ctx)), type)));
     }
 
     private static class JCRQueryProviderAdapter implements QueryLanguageProvider<LegacyResourceProviderAdapter> {
-
         private final String[] languages;
 
         public JCRQueryProviderAdapter(String[] languages) {
@@ -149,15 +165,13 @@ public class LegacyResourceProviderFactoryAdapter extends ResourceProvider<Legac
         }
 
         @Override
-        public Iterator<Resource> findResources(ResolveContext<LegacyResourceProviderAdapter> ctx, String query,
-                String language) {
-            return ctx.getProviderState().getQueryLanguageProvider().findResources((ResolveContext) ctx, query, language);
+        public Iterator<Resource> findResources(ResolveContext<LegacyResourceProviderAdapter> ctx, String query, String language) {
+            return ctx.getProviderState().getQueryLanguageProvider().findResources(((ResolveContext) (ctx)), query, language);
         }
 
         @Override
-        public Iterator<ValueMap> queryResources(ResolveContext<LegacyResourceProviderAdapter> ctx, String query,
-                String language) {
-            return ctx.getProviderState().getQueryLanguageProvider().queryResources((ResolveContext) ctx, query, language);
+        public Iterator<ValueMap> queryResources(ResolveContext<LegacyResourceProviderAdapter> ctx, String query, String language) {
+            return ctx.getProviderState().getQueryLanguageProvider().queryResources(((ResolveContext) (ctx)), query, language);
         }
     }
 }

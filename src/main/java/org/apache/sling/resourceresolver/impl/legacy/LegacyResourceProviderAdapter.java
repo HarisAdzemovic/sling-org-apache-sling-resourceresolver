@@ -1,32 +1,44 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+/* Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
  */
 package org.apache.sling.resourceresolver.impl.legacy;
-
+import ResourceMetadata.INTERNAL_CONTINUE_RESOLVING;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.jetbrains.annotations.Nullable;
+import org.apache.sling.api.adapter.Adaptable;
+import org.apache.sling.api.resource.AttributableResourceProvider;
+import org.apache.sling.api.resource.DynamicResourceProvider;
+import org.apache.sling.api.resource.ModifyingResourceProvider;
+import org.apache.sling.api.resource.ParametrizableResourceProvider;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.QueriableResourceProvider;
+import org.apache.sling.api.resource.RefreshableResourceProvider;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceProvider;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.spi.resource.provider.QueryLanguageProvider;
+import org.apache.sling.spi.resource.provider.ResolveContext;
+import org.apache.sling.spi.resource.provider.ResourceContext;
 import org.jetbrains.annotations.NotNull;
-
+import org.jetbrains.annotations.Nullable;
+import ResourceMetadata.INTERNAL_CONTINUE_RESOLVING;
 import org.apache.sling.api.adapter.Adaptable;
 import org.apache.sling.api.resource.AttributableResourceProvider;
 import org.apache.sling.api.resource.DynamicResourceProvider;
@@ -37,22 +49,23 @@ import org.apache.sling.api.resource.QueriableResourceProvider;
 import org.apache.sling.api.resource.RefreshableResourceProvider;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceMetadata;
+import org.apache.sling.api.resource.ResourceProvider;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.spi.resource.provider.QueryLanguageProvider;
 import org.apache.sling.spi.resource.provider.ResolveContext;
 import org.apache.sling.spi.resource.provider.ResourceContext;
 import org.apache.sling.spi.resource.provider.ResourceProvider;
-
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("deprecation")
 public class LegacyResourceProviderAdapter extends ResourceProvider<Object> implements Closeable {
-
-    private final org.apache.sling.api.resource.ResourceProvider rp;
+    private final ResourceProvider rp;
 
     private final String[] languages;
 
     private final boolean ownsRoot;
 
-    public LegacyResourceProviderAdapter(org.apache.sling.api.resource.ResourceProvider rp, String[] languages, boolean ownsRoot) {
+    public LegacyResourceProviderAdapter(ResourceProvider rp, String[] languages, boolean ownsRoot) {
         this.rp = rp;
         this.languages = languages;
         this.ownsRoot = ownsRoot;
@@ -63,22 +76,19 @@ public class LegacyResourceProviderAdapter extends ResourceProvider<Object> impl
     public Resource getResource(ResolveContext<Object> ctx, String path, ResourceContext resourceContext, Resource parent) {
         Resource resourceCandidate;
         if (rp instanceof ParametrizableResourceProvider) {
-            resourceCandidate = ((ParametrizableResourceProvider) rp).getResource(ctx.getResourceResolver(), path,
-                    resourceContext.getResolveParameters());
+            resourceCandidate = ((ParametrizableResourceProvider) (rp)).getResource(ctx.getResourceResolver(), path, resourceContext.getResolveParameters());
         } else {
             resourceCandidate = rp.getResource(ctx.getResourceResolver(), path);
         }
-
         ResourceProvider<?> parentProvider = ctx.getParentResourceProvider();
         ResolveContext parentCtx = ctx.getParentResolveContext();
         // Ask the parent provider
-        if (resourceCandidate == null && !ownsRoot && parentProvider != null) {
+        if (((resourceCandidate == null) && (!ownsRoot)) && (parentProvider != null)) {
             return parentProvider.getResource(parentCtx, path, resourceContext, parent);
         }
-
         // Support the INTERNAL_CONTINUE_RESOLVING flag
         Resource fallbackResource = resourceCandidate;
-        if (resourceCandidate != null && parentProvider != null && isContinueResolving(resourceCandidate)) {
+        if (((resourceCandidate != null) && (parentProvider != null)) && isContinueResolving(resourceCandidate)) {
             resourceCandidate = ctx.getParentResourceProvider().getResource(parentCtx, path, resourceContext, parent);
         }
         if (resourceCandidate != null) {
@@ -89,68 +99,73 @@ public class LegacyResourceProviderAdapter extends ResourceProvider<Object> impl
     }
 
     private boolean isContinueResolving(Resource resource) {
-        return resource.getResourceMetadata() != null
-                && resource.getResourceMetadata().containsKey(ResourceMetadata.INTERNAL_CONTINUE_RESOLVING);
+        return (resource.getResourceMetadata() != null) && resource.getResourceMetadata().containsKey(INTERNAL_CONTINUE_RESOLVING);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Iterator<Resource> listChildren(ResolveContext<Object> ctx, Resource parent) {
         Iterator<Resource> children = rp.listChildren(parent);
-        if (children == null && !ownsRoot && ctx.getParentResourceProvider() != null) {
-            children = ctx.getParentResourceProvider().listChildren((ResolveContext) ctx.getParentResolveContext(),
-                    parent);
+        if (((children == null) && (!ownsRoot)) && (ctx.getParentResourceProvider() != null)) {
+            children = ctx.getParentResourceProvider().listChildren(((ResolveContext) (ctx.getParentResolveContext())), parent);
         }
         return children;
     }
 
     @Override
-    public void refresh(final @NotNull ResolveContext<Object> ctx) {
+    public void refresh(@NotNull
+    final ResolveContext<Object> ctx) {
         if (rp instanceof RefreshableResourceProvider) {
-            ((RefreshableResourceProvider) rp).refresh();
+            ((RefreshableResourceProvider) (rp)).refresh();
         }
     }
 
     @Override
-    public @Nullable QueryLanguageProvider<Object> getQueryLanguageProvider() {
+    @Nullable
+    public QueryLanguageProvider<Object> getQueryLanguageProvider() {
         if (rp instanceof QueriableResourceProvider) {
-            return new JCRQueryProviderAdapter((QueriableResourceProvider) rp, languages);
+            return new JCRQueryProviderAdapter(((QueriableResourceProvider) (rp)), languages);
         } else {
             return super.getQueryLanguageProvider();
         }
     }
 
     @Override
-    public Collection<String> getAttributeNames(final @NotNull ResolveContext<Object> ctx) {
+    public Collection<String> getAttributeNames(@NotNull
+    final ResolveContext<Object> ctx) {
         if (rp instanceof AttributableResourceProvider) {
-            return ((AttributableResourceProvider) rp).getAttributeNames(ctx.getResourceResolver());
+            return ((AttributableResourceProvider) (rp)).getAttributeNames(ctx.getResourceResolver());
         } else {
             return super.getAttributeNames(ctx);
         }
     }
 
     @Override
-    public Object getAttribute(final @NotNull ResolveContext<Object> ctx, final @NotNull String name) {
+    public Object getAttribute(@NotNull
+    final ResolveContext<Object> ctx, @NotNull
+    final String name) {
         if (rp instanceof AttributableResourceProvider) {
-            return ((AttributableResourceProvider) rp).getAttribute(ctx.getResourceResolver(), name);
+            return ((AttributableResourceProvider) (rp)).getAttribute(ctx.getResourceResolver(), name);
         } else {
             return super.getAttribute(ctx, name);
         }
     }
 
     @Override
-    public boolean isLive(final @NotNull ResolveContext<Object> ctx) {
+    public boolean isLive(@NotNull
+    final ResolveContext<Object> ctx) {
         if (rp instanceof DynamicResourceProvider) {
-            return ((DynamicResourceProvider) rp).isLive();
+            return ((DynamicResourceProvider) (rp)).isLive();
         } else {
             return super.isLive(ctx);
         }
     }
 
     @Override
-    public void logout(final @NotNull Object state) {
+    public void logout(@NotNull
+    final Object state) {
         if (rp instanceof DynamicResourceProvider) {
-            ((DynamicResourceProvider) rp).close();
+            ((DynamicResourceProvider) (rp)).close();
         }
     }
 
@@ -161,51 +176,54 @@ public class LegacyResourceProviderAdapter extends ResourceProvider<Object> impl
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Resource create(final @NotNull ResolveContext<Object> ctx, final String path,
-            final Map<String, Object> properties) throws PersistenceException {
+    public Resource create(@NotNull
+    final ResolveContext<Object> ctx, final String path, final Map<String, Object> properties) throws PersistenceException {
         Resource createdResource = null;
         if (rp instanceof ModifyingResourceProvider) {
-            createdResource = ((ModifyingResourceProvider) rp).create(ctx.getResourceResolver(), path, properties);
+            createdResource = ((ModifyingResourceProvider) (rp)).create(ctx.getResourceResolver(), path, properties);
         }
-        if (createdResource == null && !ownsRoot && ctx.getParentResourceProvider() != null) {
-            createdResource = ctx.getParentResourceProvider().create((ResolveContext) ctx.getParentResolveContext(),
-                    path, properties);
+        if (((createdResource == null) && (!ownsRoot)) && (ctx.getParentResourceProvider() != null)) {
+            createdResource = ctx.getParentResourceProvider().create(((ResolveContext) (ctx.getParentResolveContext())), path, properties);
         }
         return createdResource;
     }
 
     @Override
-    public void delete(final @NotNull ResolveContext<Object> ctx, final @NotNull Resource resource)
-            throws PersistenceException {
+    public void delete(@NotNull
+    final ResolveContext<Object> ctx, @NotNull
+    final Resource resource) throws PersistenceException {
         if (rp instanceof ModifyingResourceProvider) {
-            ((ModifyingResourceProvider) rp).delete(ctx.getResourceResolver(), resource.getPath());
+            ((ModifyingResourceProvider) (rp)).delete(ctx.getResourceResolver(), resource.getPath());
         } else {
             super.delete(ctx, resource);
         }
     }
 
     @Override
-    public void revert(final @NotNull ResolveContext<Object> ctx) {
+    public void revert(@NotNull
+    final ResolveContext<Object> ctx) {
         if (rp instanceof ModifyingResourceProvider) {
-            ((ModifyingResourceProvider) rp).revert(ctx.getResourceResolver());
+            ((ModifyingResourceProvider) (rp)).revert(ctx.getResourceResolver());
         } else {
             super.revert(ctx);
         }
     }
 
     @Override
-    public void commit(final @NotNull ResolveContext<Object> ctx) throws PersistenceException {
+    public void commit(@NotNull
+    final ResolveContext<Object> ctx) throws PersistenceException {
         if (rp instanceof ModifyingResourceProvider) {
-            ((ModifyingResourceProvider) rp).commit(ctx.getResourceResolver());
+            ((ModifyingResourceProvider) (rp)).commit(ctx.getResourceResolver());
         } else {
             super.commit(ctx);
         }
     }
 
     @Override
-    public boolean hasChanges(final @NotNull ResolveContext<Object> ctx) {
+    public boolean hasChanges(@NotNull
+    final ResolveContext<Object> ctx) {
         if (rp instanceof ModifyingResourceProvider) {
-            return ((ModifyingResourceProvider) rp).hasChanges(ctx.getResourceResolver());
+            return ((ModifyingResourceProvider) (rp)).hasChanges(ctx.getResourceResolver());
         } else {
             return super.hasChanges(ctx);
         }
@@ -213,18 +231,19 @@ public class LegacyResourceProviderAdapter extends ResourceProvider<Object> impl
 
     @SuppressWarnings("unchecked")
     @Override
-    public <AdapterType> AdapterType adaptTo(final @NotNull ResolveContext<Object> ctx, final @NotNull Class<AdapterType> type) {
-        if ( rp instanceof Adaptable ) {
-            final Object value = ((Adaptable)rp).adaptTo(type);
-            if ( value != null ) {
-                return (AdapterType) value;
+    public <AdapterType> AdapterType adaptTo(@NotNull
+    final ResolveContext<Object> ctx, @NotNull
+    final Class<AdapterType> type) {
+        if (rp instanceof Adaptable) {
+            final Object value = ((Adaptable) (rp)).adaptTo(type);
+            if (value != null) {
+                return ((AdapterType) (value));
             }
         }
         return super.adaptTo(ctx, type);
     }
 
     private static class JCRQueryProviderAdapter implements QueryLanguageProvider<Object> {
-
         private final QueriableResourceProvider rp;
 
         private final String[] languages;
@@ -252,6 +271,6 @@ public class LegacyResourceProviderAdapter extends ResourceProvider<Object> impl
 
     @Override
     public String toString() {
-        return "[" + getClass().getSimpleName() + ": " + rp.toString() + " ]";
+        return ((("[" + getClass().getSimpleName()) + ": ") + rp.toString()) + " ]";
     }
 }
